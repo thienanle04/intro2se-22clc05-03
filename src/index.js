@@ -1,0 +1,24 @@
+const express = require('express')
+const app = express()
+const port = 3000
+
+const connectToDb = require('./config/db/db');
+connectToDb();
+
+var morgan = require('morgan');
+app.use(morgan('dev'));
+
+const cors = require('cors');
+app.use(cors());
+
+// body parser
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// routes
+const userRouter = require('./router/userRouter');
+app.use('/api/user', userRouter);
+
+app.listen(port, () => {
+  console.log(`Example app listening on port ${port}`)
+})
