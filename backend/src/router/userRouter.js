@@ -1,16 +1,15 @@
 const express = require('express');
+const authenticateToken = require('../middleware/verifyToken');
 
 const router = express.Router();
-const userController = require('../controller/userController');
+const userController = require('../controller/userController.js');
 
 router
   .route('/')
-    .get(userController.getAllUsers)
-    .post(userController.createUser);
+    .get(authenticateToken, userController.getAllUsers)
   
 router
   .route('/:userId')
-  .get(userController.getUserById)
-
+  .get(authenticateToken, userController.getUserById)
 
 module.exports = router;

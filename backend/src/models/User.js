@@ -5,9 +5,13 @@ const userSchemal = new Schema({
   id:{
     type: mongoose.Schema.Types.ObjectId,
   },
-  position: {
-    type: Number,
-    required: true,
+  username: {
+    type: String,
+    required: [true, "Username is required"],
+  },
+  password: {
+    type: String,
+    required: [true, "Password is required"],
   },
   name: {
     type: String,
