@@ -1,7 +1,8 @@
 const jwt = require('jsonwebtoken');
 
-const authenticateToken = (req, res, next) => {
-  const authHeader = req.headers['authorization'];
+class Authentication{
+  authenticateToken(req, res, next) {
+    const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
 
   if (token == null) {
@@ -22,8 +23,21 @@ const authenticateToken = (req, res, next) => {
     }
 
     req.user = user;
-    next(); // Tiếp tục đến middleware hoặc route handler tiếp theo
+    next();
   });
+  }
+
+  isAdmin(req, res, next) {
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({
+        data: null,
+        message: 'You are not an admin',
+        code: 0
+      });
+    }
+    next();
+  }
 }
 
-module.exports = authenticateToken;
+
+module.exports = new Authentication();

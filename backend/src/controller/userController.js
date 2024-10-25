@@ -3,7 +3,6 @@ const User = require("../models/User");
 class UserController {
   // [GET] /api/user
   async getAllUsers(req, res) {
-    // [GET] /user
     try {
       const userData = await User.find(); 
       res.status(200).json({ 
@@ -22,7 +21,15 @@ class UserController {
   // [GET] /api/user/userId
   async getUserById(req, res){
     try {
+      const userIdFromToken = req.user.id;
       const userId = req.params.userId; // Lấy userId từ URL
+      if(userId != userIdFromToken && req.user.role !== 'admin'){
+        return res.status(403).json({
+          data: null,
+          message: 'You cant access otherUser',
+          code: 0
+        });
+      }
       const user = await User.findById(userId); // Tìm user theo ID
   
       if (!user) {

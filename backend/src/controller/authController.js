@@ -1,5 +1,7 @@
 const User = require('../models/User');
 const generateToken = require('../middleware/generateToken');
+const bcrypt = require('bcryptjs');
+
 
 class AuthController {
   // [POST] /api/auth/login
@@ -15,10 +17,13 @@ class AuthController {
           code: 0
         });
       } else {
-        if (user.password === password) {
+        const checkPassword = bcrypt.compareSync(password, user.password);
+        if (checkPassword) {
+          console.log("Authcontroller user Role: ", user.role);
           const token = generateToken({
             id: user._id,
             username: user.username,
+            role: user.role
           });
 
           return res.status(200).json({
@@ -69,6 +74,7 @@ class AuthController {
       const token = generateToken({
         id: newUser._id,
         username: newUser.username,
+        role: newUser.role
       });
 
       return res.status(200).json({
