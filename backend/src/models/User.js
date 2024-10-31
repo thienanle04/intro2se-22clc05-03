@@ -1,9 +1,14 @@
 const { Schema } = require("mongoose");
 const mongoose = require('mongoose');
+const { type } = require("os");
 
 const userSchemal = new Schema({
   id:{
     type: mongoose.Schema.Types.ObjectId,
+  },
+  image:{
+    type: String,
+    default: "https://static-00.iconduck.com/assets.00/avatar-default-symbolic-icon-2048x1949-pq9uiebg.png",
   },
   username: {
     type: String,
@@ -22,9 +27,20 @@ const userSchemal = new Schema({
   },
   role: {
     type: String,
-    default: "user",
+    default: "customer",
   },
-});
+  address: {
+    type: String,
+  },
+  phone: {
+    type: String,
+  },
+  cart:{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Cart",
+    }
+
+}, {timestamps: true});
 
 const User = mongoose.model("User", userSchemal);
 

@@ -61,10 +61,11 @@ class AuthController {
           code: 0
         });
       }
+      const hashedPassword = await bcrypt.hash(password, 10);
 
       const newUser = new User({
         username: username,
-        password: password,
+        password: hashedPassword,
         name: name,
         email: email
       });
