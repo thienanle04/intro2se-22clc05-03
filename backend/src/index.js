@@ -20,6 +20,9 @@ const userRouter = require('./router/userRouter.js');
 const authRouter = require('./router/authRouter.js');
 const uploadRouter = require('./router/cloudinary-upload');
 const bookRouter = require('./router/bookRouter.js');
+const swaggerDocs = require('./swagger.js');
+swaggerDocs(app, port);
+
 
 app.use('/uploads', uploadRouter);
 app.use('/api/v1/users', userRouter);
