@@ -14,7 +14,7 @@ async function connectToDb() {
       createAdminAccount();
     });
   } catch (error) {
-    console.log('Connected to the database failed');
+    console.log('Connected to the database failed with error: ', error);
     
   }
 }
