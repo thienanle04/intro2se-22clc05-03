@@ -21,7 +21,7 @@ class Authentication {
           code: 0
         });
       }
-
+      console.log("User from veifyToken: ", user)
       req.user = user;
       next();
     });
@@ -40,7 +40,8 @@ class Authentication {
 
   reCheckUser(req, res, next) {
     const userId = req.params.userId;
-    const reqUserId = req.user.userId;
+    const reqUserId = req.user.id;
+    console.log(userId, " ", reqUserId)
     console.log(req.user.role);
     if (userId !== reqUserId && req.user.role !== 'admin') {
       return res.status(403).json({

@@ -1,18 +1,15 @@
-const { Schema } = require('mongoose');
-
 const mongoose = require('mongoose');
 
-const cartItemSchema = new Schema({
-  quantity: {
-    type: Number,
-    default: 1,
-  },
+const cartItemSchema = new mongoose.Schema({
   book: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Book',
-    required: [true, 'Book is required']
+    ref: 'Book'
+  },
+  quantity: {
+    type: Number,
+    default: 1
   }
-}, { timestamps: true });
+}, { timestamps: true })
 
 const CartItem = mongoose.model('CartItem', cartItemSchema);
 

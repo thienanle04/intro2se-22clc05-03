@@ -1,31 +1,62 @@
-const { Schema } = require('mongoose');
-
 const mongoose = require('mongoose');
 
-const OrderSchema = new Schema({
-  items: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'OrderItem',
-    }
-  ],
+const orderSchema = new mongoose.Schema({
   user: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: [true, 'User is required']
+    ref: 'User'
   },
-  address: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Address',
-    required: [true, 'Address is required']
+  items: [
+    {
+      item: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'CartItem'
+      }
+    }
+  ],
+  total: {
+    type: Number,
+    default: 0
   },
   status: {
     type: String,
-    enum: ['Pending', 'Delivered', 'Cancelled'],
-    default: 'Pending',
+    default: 'pending'
   },
-}, { timestamps: true });
+  details: {
+    name: {
+      type: String,
+      required: [true, 'Name is required']
+    },
+    email: {
+      type: String,
+      required: [true, 'Email is required']
+    },
+    phone: {
+      type: String,
+      required: [true, 'Phone is required']
+    },
+    number: {
+      type: String,
+      required: [true, 'Number is required']
+    },
+    street: {
+      type: String,
+      required: [true, 'Street is required']
+    },
+    district: {
+      type: String,
+      required: [true, 'Province is required']
+    },
+    ward: {
+      type: String,
+      required: [true, 'Province is required']
+    },
+    city: {
+      type: String,
+      required: [true, 'City is required']
+    }
+  }
+}, { timestamps: true })
 
-const Order = mongoose.model('Order', OrderSchema);
+const Order = mongoose.model('Order', orderSchema);
 
 module.exports = Order;

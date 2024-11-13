@@ -1,7 +1,7 @@
 // adminConfig.js
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');  // Dùng để hash mật khẩu
-const User = require('../models/User');
+const User = require('../models/Users');
 
 async function createAdminAccount() {
   try {

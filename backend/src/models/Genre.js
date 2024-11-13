@@ -1,8 +1,6 @@
-const { Schema } = require('mongoose');
-
 const mongoose = require('mongoose');
 
-const genreSchema = new Schema({
+const genreSchema = new mongoose.Schema({
   name: {
     type: String,
     required: [true, 'Name is required']
@@ -10,7 +8,7 @@ const genreSchema = new Schema({
   isHidden: {
     type: Boolean,
     default: false
-  }
+  },
 }, { timestamps: true })
 
 const Genre = mongoose.model('Genre', genreSchema);

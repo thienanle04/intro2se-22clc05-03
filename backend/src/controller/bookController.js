@@ -1,4 +1,4 @@
-const Book = require('../models/Book');
+const Book = require('../models/Books');
 const Genre = require('../models/Genre');
 
 class BookController {
@@ -24,6 +24,7 @@ class BookController {
 
   // [POST] /api/books: create a new book
   async createNewBook(req, res) {
+    console.log(req.body);
     try {
       const {
         title,
@@ -34,10 +35,11 @@ class BookController {
         price,
         stock,
         image,
+        rating,
       } = req.body;
 
       const bookFound = await Book.findOne({ title, author });
-      if(bookFound){
+      if (bookFound) {
         res.status(500).json({
           data: null,
           message: 'Book already exists',
@@ -45,24 +47,27 @@ class BookController {
         });
       }
 
+
       var genreFound = await Genre.findOne({ name: genre });
       if (!genreFound) {
-        genreFound = new Genre({ 
+        genreFound = new Genre({
           name: genre,
           isHidden: false,
         });
         await genreFound.save();
       }
+      console.log(image)
 
       const book = new Book({
         title,
+        image,
         author,
         genre: genreFound._id,
         SBN,
         description,
         price,
         stock,
-        image,
+        rating
       });
       await book.save();
       res.status(201).json({
@@ -92,7 +97,7 @@ class BookController {
         message: 'Get book by bookId successfully',
         code: 1
       });
-    } catch(error) {
+    } catch (error) {
       res.status(500).json({
         data: null,
         message: 'Get book by bookId failed',
@@ -113,49 +118,49 @@ class BookController {
       stock,
       image,
     } = req.body;
-    
+
     try {
       const bookId = req.params.bookId;
-    const book = await Book.findById(bookId);
-    if (!book) {
-      return res.status(404).json({
-        data: null,
-        message: 'Book not found',
-        code: 0
-      });
-    }
-    if(genre){
-      var genreFound = await Genre.findOne({ name: genre });
-      if (!genreFound) {
-        genreFound = new Genre({ 
-          name: genre,
-          isHidden: false,
+      const book = await Book.findById(bookId);
+      if (!book) {
+        return res.status(404).json({
+          data: null,
+          message: 'Book not found',
+          code: 0
         });
-        await genreFound.save();
-        book.genre = genreFound._id;
       }
-      if(genreFound._id != book.genre){
-        book.genre = genreFound._id;
+      if (genre) {
+        var genreFound = await Genre.findOne({ name: genre });
+        if (!genreFound) {
+          genreFound = new Genre({
+            name: genre,
+            isHidden: false,
+          });
+          await genreFound.save();
+          book.genre = genreFound._id;
+        }
+        if (genreFound._id != book.genre) {
+          book.genre = genreFound._id;
+        }
       }
-    }
-    if(title) book.title = title;
-    if(author) book.author = author;
-    if(SBN) book.SBN = SBN;
-    if(description) book.description = description;
-    if(price) book.price = price;
-    if(stock) book.stock = stock;
-    if(image) book.image = image;
-    await book.save();
-    res.status(200).json({
-      data: {
-        book,
-      },
-      message: 'Update book by bookId successfully',
-      code: 1
-    });
+      if (title) book.title = title;
+      if (author) book.author = author;
+      if (SBN) book.SBN = SBN;
+      if (description) book.description = description;
+      if (price) book.price = price;
+      if (stock) book.stock = stock;
+      if (image) book.image = image;
+      await book.save();
+      res.status(200).json({
+        data: {
+          book,
+        },
+        message: 'Update book by bookId successfully',
+        code: 1
+      });
     } catch (error) {
       res.status(200).json({
-        data: null,  
+        data: null,
         message: 'Update book by bookId failed with error: ' + error.message,
         code: 0
       });
@@ -182,7 +187,7 @@ class BookController {
         code: 1
       });
 
-    }catch(error){
+    } catch (error) {
       res.status(500).json({
         data: null,
         message: 'Delete book by bookId failed with error: ' + error.message,
@@ -190,7 +195,96 @@ class BookController {
       });
     }
   }
-      
+
+  async addListBooks(req, res) {
+    try {
+      const listBooks = req.body;
+      listBooks.forEach(async book => {
+        const {
+          title,
+          author,
+          genre,
+          SBN,
+          description,
+          price,
+          stock,
+          image,
+          rating,
+        } = book;
+
+        const bookFound = await Book.findOne({ title, author });
+        if (bookFound) {
+          return res.status(500).json({
+            data: null,
+            message: 'Book already exists',
+            code: 0
+          });
+        }
+
+        var genreFound = await Genre.findOne({ name: genre });
+        if (!genreFound) {
+          genreFound = new Genre({
+            name: genre,
+            isHidden: false,
+          });
+          await genreFound.save();
+        }
+
+        const newBook = new Book({
+          title,
+          image,
+          author,
+          genre: genreFound._id,
+          SBN,
+          description,
+          price,
+          stock,
+          rating
+        });
+        await newBook.save();
+      });
+      res.status(201).json({
+        data: null,
+        message: 'Create new list books successfully',
+        code: 1
+      });
+    } catch (error) {
+      res.status(500).json({
+        data: null,
+        message: 'Create new list books failed with error: ' + error,
+        code: 0
+      });
+    }
+  }
+  async getBookByGenre(req, res) {
+    try {
+      const genre = req.params.genre;
+      const genreFound = await Genre.findOne({ name: genre });
+      if (!genreFound) {
+        return res.status(404).json({
+          data: null,
+          message: 'Genre not found',
+          code: 0
+        });
+      }
+      const books = await Book.find({ genre: genreFound._id });
+      res.status(200).json({
+        data: {
+          books,
+        },
+        message: 'Get book by genre successfully',
+        code: 1
+      });
+    }
+    catch (error) {
+      res.status(500).json({
+        data: null,
+        message: 'Get book by genre failed with error: ' + error,
+        code: 0
+      });
+    }
+  }
+
 }
 
 module.exports = new BookController();
