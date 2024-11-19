@@ -180,7 +180,9 @@ class BookController {
           code: 0
         });
       }
-      await book.remove();
+      // await book.remove();
+      await Book.findByIdAndDelete(bookId);
+      
       res.status(200).json({
         data: null,
         message: 'Delete book by bookId successfully',

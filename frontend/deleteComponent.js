@@ -18,42 +18,90 @@ export const deleteComponent = {
     },
     methods: {
         // Hàm tìm sách có ISBN và Tên sách trùng
-        searchBooks() {
+        async searchBooks() {
             if (!this.isbn && !this.bookTitle) {
-                this.booksToDelete = []; // Nếu không có ISBN và tên sách, không hiển thị sách
+                this.booksToDelete = [];
                 return;
             }
-
-            const allBooks = this.getAllBooks(); // Lấy tất cả sách (API hoặc dữ liệu giả lập)
-
-            // Tìm tất cả sách có ISBN và tên trùng với dữ liệu nhập vào
-            this.booksToDelete = allBooks.filter(book => {
-                const matchesIsbn = this.isbn ? book.ISBN.includes(this.isbn) : true;
-                const matchesTitle = this.bookTitle ? book.Title.toLowerCase().includes(this.bookTitle.toLowerCase()) : true;
-                return matchesIsbn && matchesTitle;
-            });
-        },
-
+            
+            try {
+                // Fetch books from API
+                const res = await fetch('http://localhost:8081/api/v1/books');
+                
+                // Check if the response is valid
+                if (!res.ok) {
+                    throw new Error('Failed to fetch books');
+                }
+                
+                // Parse the response JSON
+                const data = await res.json();
+                
+                // Check if the books data exists and is an array
+                const allBooks = Array.isArray(data?.data?.books) ? data.data.books : [];
+                console.log(allBooks); // Check the data structure
+                
+                // If no books were returned or API returned invalid data
+                if (allBooks.length === 0) {
+                    alert('No books found matching the criteria');
+                    return;
+                }
+                
+                // Filter books based on ISBN and Title
+                this.booksToDelete = allBooks.filter(book => {
+                    const matchesIsbn = this.isbn ? book._id.includes(this.isbn) : true;
+                    const matchesTitle = this.bookTitle ? book.title.toLowerCase().includes(this.bookTitle.toLowerCase()) : true;
+                    return matchesIsbn && matchesTitle;
+                });
+            } catch (error) {
+                console.error('Error searching books:', error);
+                alert('An error occurred while searching for books. Please try again.');
+            }
+        },      
         // Xoá sách đã chọn
-        deleteBook() {
+        async deleteBook() {
             if (!this.selectedBook) {
                 alert("Vui lòng chọn một cuốn sách để xóa!");
                 return;
             }
             // Phát sự kiện 'delete-book' cùng với ISBN và Title sách
-            this.$emit('delete-book', { isbn: this.selectedBook.ISBN, title: this.selectedBook.Title });
-            alert(`Book "${this.selectedBook.Title}" has been deleted.`);
+            try {
+                // Make a DELETE request to the API to delete the book
+                const response = await fetch(`http://localhost:8081/api/v1/books/${this.selectedBook._id}/delete`, {
+                    method: 'DELETE', // Specify the method as DELETE
+                    headers: {
+                        'Content-Type': 'application/json',
+                        // Add any additional headers you need, such as authorization token
+                        // 'Authorization': `Bearer ${token}`,
+                    },
+                });
+        
+                if (!response.ok) {
+                    throw new Error(`Failed to delete book: ${response.statusText}`);
+                }
+        
+                const data = await response.json();
+                console.log(data); // Handle the response data (e.g., success message)
+                
+                alert(`Book "${this.selectedBook.Title}" has been deleted.`);
+                
+                // Optionally, remove the book from the UI list after deletion
+                this.booksToDelete = this.booksToDelete.filter(book => book._id !== this.selectedBook._id);
+                this.selectedBook = null; // Reset selected book
+        
+            } catch (error) {
+                console.error('Error deleting book:', error);
+                alert('Failed to delete book. Please try again.');
+            }
+            alert(`Book "${this.selectedBook.title}" has been deleted.`);
         },
 
         // Hàm giả lập lấy tất cả sách (thực tế sẽ thay thế bằng API thực tế)
-        getAllBooks() {
+        async getAllBooks() {
             // Dữ liệu giả lập, thay thế bằng API thực tế
-            return [
-                { ISBN: '12345', Title: 'Learn Vue', AuthorName: 'John Doe', Year: 2023 },
-                { ISBN: '67890', Title: 'Learn Vue', AuthorName: 'Jane Doe', Year: 2022 },
-                { ISBN: '11223', Title: 'JavaScript Basics', AuthorName: 'Alice Smith', Year: 2020 },
-                { ISBN: '44556', Title: 'Vue.js for Beginners', AuthorName: 'Charlie Brown', Year: 2021 },
-            ];
+            const res = await fetch('http://localhost:8081/api/v1/books');
+            const data = await res.json();
+            console.log(data.data.books);
+            return data.data.books;
         }
     },
     template: `
@@ -80,11 +128,11 @@ export const deleteComponent = {
     <div v-if="booksToDelete.length > 0">
         <h5 class="mt-3">Books found:</h5>
         <ul class="list-group mb-3">
-            <li class="list-group-item" v-for="book in booksToDelete" :key="book.ISBN">
+            <li class="list-group-item" v-for="book in booksToDelete" :key="book._id">
                 <div>
-                    <strong>{{ book.Title }}</strong> - {{ book.AuthorName }} ({{ book.Year }})
+                    <strong>{{ book.title }}</strong> - {{ book.author }} 
                     <br>
-                    <small>ISBN: {{ book.ISBN }}</small>
+                    <small>ISBN: {{ book._id }}</small>
                     <button class="btn btn-sm btn-info float-end" @click="selectedBook = book">Select</button>
                 </div>
             </li>
@@ -92,7 +140,7 @@ export const deleteComponent = {
     </div>
     <div v-if="selectedBook">
         <div class="alert alert-info">
-            <strong>Selected:</strong> {{ selectedBook.Title }} by {{ selectedBook.AuthorName }}
+            <strong>Selected:</strong> {{ selectedBook.title }} by {{ selectedBook.author }}
         </div>
         <button type="button" class="btn btn-danger" @click="deleteBook">Delete Selected Book</button>
     </div>

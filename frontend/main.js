@@ -19,27 +19,27 @@ export default {
     methods: {
         // Thêm sách vào danh sách
         addBook(data) {
-            this.books.push(data); // Thêm sách mới vào danh sách
-            console.log("Book added:", data);
+            // this.books.push(data); // Thêm sách mới vào danh sách
+            // console.log("Book added:", data);
         },
         // Xóa sách theo ISBN và Tên sách
         deleteBook({ isbn, title }) {
-            const index = this.books.findIndex(book => book.ISBN === isbn && book.Title.toLowerCase() === title.toLowerCase());
-            if (index !== -1) {
-                this.books.splice(index, 1); // Xóa sách khỏi danh sách
-                console.log(`Book with ISBN "${isbn}" and Title "${title}" has been deleted.`);
-            } else {
-                console.log(`Book with ISBN "${isbn}" and Title "${title}" not found!`);
-            }
+            // const index = this.books.findIndex(book => book.ISBN === isbn && book.Title.toLowerCase() === title.toLowerCase());
+            // if (index !== -1) {
+            //     this.books.splice(index, 1); // Xóa sách khỏi danh sách
+            //     console.log(`Book with ISBN "${isbn}" and Title "${title}" has been deleted.`);
+            // } else {
+            //     console.log(`Book with ISBN "${isbn}" and Title "${title}" not found!`);
+            // }
         },
         modifyBook(updatedBook) {
-            const index = this.books.findIndex(book => book.ISBN === updatedBook.ISBN);
-            if (index !== -1) {
-                this.books[index] = { ...this.books[index], ...updatedBook };
-                console.log("Book updated:", updatedBook);
-            } else {
-                console.log(`Book with ISBN "${updatedBook.ISBN}" not found!`);
-            }
+            // const index = this.books.findIndex(book => book.ISBN === updatedBook.ISBN);
+            // if (index !== -1) {
+            //     this.books[index] = { ...this.books[index], ...updatedBook };
+            //     console.log("Book updated:", updatedBook);
+            // } else {
+            //     console.log(`Book with ISBN "${updatedBook.ISBN}" not found!`);
+            // }
         }
     },
     template: `

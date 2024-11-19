@@ -1,20 +1,84 @@
+
 export const addComponent = {
     data() {
         return {
             book: {
+                title: "",
+                author: "",
+                genre: "",
+                price: 0,
+                available: false,
+                image: "", // URL for the book's image
+                stock: 0,
+                description: "",
+                SBN: "",
+                rating: 4.4,
+                __v: 0
+            },
+        };
+    },
+    methods: {
+        createNewBook() {
+            return {
+                title: this.book.title || "Null", // Replace with dynamic value
+                image: this.book.image || "Null", // Replace with dynamic value
+                author: this.book.author || "Null", // Replace with dynamic value
+                price: this.book.price || 14.99, // Replace with dynamic value
+                stock: this.book.stock || 0, // Replace with dynamic value
+                genre: this.book.genre || "Null", // Replace with dynamic value
+                description: this.book.description || "Null", // Replace with dynamic value
+                SBN: this.book.SBN || "Null", // Replace with dynamic value
+                rating: this.book.rating || 0, // Replace with dynamic value
+                __v: 0 // Versioning, optional
+            };
+        },
+        async submit() {
+            try {
+                const token = this.getAuthToken(); // Retrieve the authentication token
+                const bookData = this.createNewBook(); // Use the book object directly
+        
+                const response = await fetch('http://localhost:8081/api/v1/books', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        // Uncomment if using token authentication
+                        // 'Authorization': `Bearer ${token}`,
+                    },
+                    body: JSON.stringify(bookData), // Send the book data as JSON
+                });
+        
+                if (!response.ok) {
+                    throw new Error(`Failed to add book: ${response.statusText}`);
+                }
+        
+                const data = await response.json();
+                alert(`Book "${data.title}" has been successfully added.`);
+                this.clearForm();
+            } catch (error) {
+                console.error('Error adding book:', error);
+                alert('Failed to add book. Please try again.');
+            }
+        },
+        clearForm() {
+            this.book = {
                 title: '',
                 author: '',
                 genre: '',
                 price: null,
                 available: false,
-                imageUrl: '', // Thuộc tính mới để lưu URL hình ảnh
-            },
-        };
-    },
-    methods: {
-        submit(){
-            this.$emit('submit-book', { ...this.book });
-        }
+                image: '',
+                stock: 0,
+                description: '',
+                SBN: '',
+                rating: 0,
+                __v: 0
+            };
+        },
+
+        getAuthToken() {
+            // Retrieve the token from storage or app state
+            return localStorage.getItem('authToken') || ''; // Replace with actual token retrieval logic
+        },
     },
     template: `
 <div class="card">
@@ -58,7 +122,7 @@ export const addComponent = {
             <span>Image URL</span>
         </div>
         <div class="col-7">
-            <input type="text" class="form-control" v-model="book.imageUrl" placeholder="Image URL" aria-label="Image URL">
+            <input type="text" class="form-control" v-model="book.image" placeholder="Image URL" aria-label="Image URL">
         </div>          
     </div>
     <div class="row d-flex align-items-center mb-3">
