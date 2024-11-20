@@ -9,7 +9,6 @@ export const comLogin = {
                 username: $('#username').val(),
                 password: $('#password').val()
             }, (res) => {
-                console.log(res);
                 if (res.code == 1) {
                     // Redirect to home page
                     $('div#loginError').replaceWith('<div id="loginError"></div>');

@@ -1,4 +1,5 @@
 <script setup>
+import { computed } from 'vue';
 import { RouterLink, RouterView } from 'vue-router'
 import { comLogin } from './components/login';
 import { comSignUp } from './components/signup';
@@ -12,20 +13,23 @@ import { comSignUp } from './components/signup';
 export default {
     data() {
         return {
-            token: null,
             currentComponent: 'comLogin', // Current component to display
+            authToken: null, // Auth token
+            isLoggedIn: false, // Is user logged in
         }
     },
     provide() {
         return {
+            authToken: computed(() => this.authToken), // Provide auth token to all child components
         }
     },
     computed: {
     },
     methods: {
-        LoggedIn(data) {
+        LoggedIn(authToken) {
             this.currentComponent = 'comHome';
-            this.user = data;
+            this.authToken = authToken;
+            this.isLoggedIn = true;
         },
         goLogin() {
             this.currentComponent = 'comLogin';
