@@ -22,7 +22,7 @@ app.set('view engine', 'handlebars');
 app.set('views', './views');
 
 // Kết nối đến database
-const connectToDb = require('./config/db/db');
+const connectToDb = require('./config/db/db.js');
 connectToDb();
 
 // url
@@ -122,7 +122,7 @@ app.use(express.urlencoded({ extended: true }));
 // Routes
 const userRouter = require('./router/userRouter.js');
 const authRouter = require('./router/authRouter.js');
-const uploadRouter = require('./router/cloudinary-upload');
+const uploadRouter = require('./router/cloudinary-upload.js');
 const bookRouter = require('./router/bookRouter.js');
 const swaggerDocs = require('./swagger.js');
 swaggerDocs(app, port);
