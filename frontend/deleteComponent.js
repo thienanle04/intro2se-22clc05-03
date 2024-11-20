@@ -66,7 +66,7 @@ export const deleteComponent = {
             // Phát sự kiện 'delete-book' cùng với ISBN và Title sách
             try {
                 // Make a DELETE request to the API to delete the book
-                const response = await fetch(`http://localhost:8081/api/v1/books/${this.selectedBook._id}/delete`, {
+                const response = await fetch(`/api/v1/books/${this.selectedBook._id}/delete`, {
                     method: 'DELETE', // Specify the method as DELETE
                     headers: {
                         'Content-Type': 'application/json',

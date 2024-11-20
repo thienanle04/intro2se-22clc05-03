@@ -37,7 +37,7 @@ export const addComponent = {
                 const token = this.getAuthToken(); // Retrieve the authentication token
                 const bookData = this.createNewBook(); // Use the book object directly
         
-                const response = await fetch('http://localhost:8081/api/v1/books', {
+                const response = await fetch('/api/v1/books', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

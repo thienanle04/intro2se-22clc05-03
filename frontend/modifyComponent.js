@@ -72,7 +72,7 @@ export const modifyComponent = {
 
         async updateBook(updatedBook, token) {
             try {
-                const response = await fetch(`http://localhost:8081/api/v1/books/${this.selectedBook._id}/update`, {
+                const response = await fetch(`/api/v1/books/${this.selectedBook._id}/update`, {
                     method: 'PATCH',
                     headers: {
                         'Content-Type': 'application/json',
