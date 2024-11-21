@@ -3,9 +3,13 @@ import { RouterLink, RouterView } from 'vue-router'
 import addComponent from "../components/shop/addComponent.vue";
 import deleteComponent from "../components/shop/deleteComponent.vue";
 import modifyComponent from "../components/shop/modifyComponent.vue";
+import { ref } from 'vue';
+import adminHeader from '../components/shop/adminHeader.vue';
 </script>
 
 <template>
+    <adminHeader />
+    <br>
     <div class="btn-group" role="group">
         <button type = button class="btn btn-primary mb-3" @click="currentComponent = 'addBook'">Add Book</button>
         <button type = button class="btn btn-primary mb-3" @click="currentComponent = 'modifyBook'">Modify Book</button>
