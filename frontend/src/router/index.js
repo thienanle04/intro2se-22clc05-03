@@ -11,19 +11,19 @@ const router = createRouter({
         {
           path: '',
           name: 'HomeBody',
-          component: () => import('@/components/user/homeBody.vue')
+          component: () => import('@/components/user/homeBody.vue'),
         },
-        {
-          path: '/login',
-          name: 'Login',
-          component: () => import('@/components/user/login.vue'),
-        },
-        {
-          path: '/signup',
-          name: 'Signup',
-          component: () => import('@/components/user/signup.vue'),
-        }
-      ]
+      ],
+    },
+    {
+      path: '/login',
+      name: 'Login',
+      component: () => import('@/components/user/login.vue'),
+    },
+    {
+      path: '/signup',
+      name: 'Signup',
+      component: () => import('@/components/user/signup.vue'),
     },
     {
       path: '/shop',
@@ -32,7 +32,8 @@ const router = createRouter({
       component: () => import('@/views/ShopView.vue'),
     },
   ],
-})
+});
+
 
 router.beforeEach((to, from, next) => {
   const isAuthenticated = !!localStorage.getItem('authToken');
