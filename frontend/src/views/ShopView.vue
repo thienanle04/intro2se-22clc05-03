@@ -8,18 +8,20 @@ import adminHeader from '../components/shop/adminHeader.vue';
 </script>
 
 <template>
-    <adminHeader />
-    <br>
-    <div class="btn-group" role="group">
-        <button type = button class="btn btn-primary mb-3" @click="currentComponent = 'addBook'">Add Book</button>
-        <button type = button class="btn btn-primary mb-3" @click="currentComponent = 'modifyBook'">Modify Book</button>
-        <button type = button class="btn btn-primary mb-3" @click="currentComponent = 'deleteBook'">Delete Book</button>
-    </div>
-    
     <div>
-        <addComponent v-show="currentComponent === 'addBook'" @addBook="addBook" />
-        <modifyComponent v-show="currentComponent === 'modifyBook'" @modifyBook="modifyBook" />
-        <deleteComponent v-show="currentComponent === 'deleteBook'" @deleteBook="deleteBook" />
+        <adminHeader />
+        <br>
+        <div class="btn-group" role="group">
+            <button type = button class="btn btn-primary mb-3" @click="currentComponent = 'addBook'">Add Book</button>
+            <button type = button class="btn btn-primary mb-3" @click="currentComponent = 'modifyBook'">Modify Book</button>
+            <button type = button class="btn btn-primary mb-3" @click="currentComponent = 'deleteBook'">Delete Book</button>
+        </div>
+        
+        <div>
+            <addComponent v-show="currentComponent === 'addBook'" @addBook="addBook" />
+            <modifyComponent v-show="currentComponent === 'modifyBook'" @modifyBook="modifyBook" />
+            <deleteComponent v-show="currentComponent === 'deleteBook'" @deleteBook="deleteBook" />
+        </div>
     </div>
 </template>
 

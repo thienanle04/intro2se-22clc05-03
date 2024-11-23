@@ -15,16 +15,16 @@
                         <!-- Center Section: Search Bar -->
                         <div class="col-8 d-flex justify-content-center">
                             <form class="d-flex w-75" role="search">
-                                <input v-model="searchQuery" class="form-control px-4" type="search"
+                                <input  class="form-control px-4" type="search"
                                     placeholder="🔍 Search book titles, authors, publishers..." aria-label="Search" />
                             </form>
                         </div>
 
                         <!-- Right Section: Icons -->
                         <div class="col-2 d-flex justify-content-end align-items-center">
-                            <a href="#" class="text-dark me-3">
+                            <RouterLink to="/login" class="text-dark me-3">
                                 <span>Login</span>
-                            </a>
+                            </RouterLink>
                             <span class="text-dark me-3">|</span>
                             <a href="#" class="text-dark me-3">
                                 <i class="bi bi-cart3 fs-4"></i>
