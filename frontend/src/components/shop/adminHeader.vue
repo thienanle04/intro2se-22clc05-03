@@ -3,9 +3,9 @@
       <nav class="navbar navbar-expand-lg bg-primary">
         <div class="container-fluid">
           <!-- Brand/Logo -->
-          <a class="navbar-brand" href="#">
+          <RouterLink to="/shop" class="navbar-brand">
             Home
-          </a>
+          </RouterLink>
   
           <!-- Toggler for mobile view -->
           <button
@@ -47,6 +47,8 @@
   </template>
   
   <script>
+  import { RouterLink } from "vue-router";
+
   export default {
     name: "adminHeader",
     methods: {
