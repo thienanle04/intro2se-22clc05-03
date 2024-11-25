@@ -4,7 +4,8 @@
             <h4 class="text-center mb-3">Random Books</h4>
             <div class="book-list">
                 <!-- Display 4 random books -->
-                <div v-for="(book, index) in randomBooks" :key="index" class="book-item d-flex align-items-center mb-3">
+                <div v-for="(book, index) in randomBooks" :key="index" class="book-item d-flex align-items-center mb-3"
+                style="cursor: pointer;" @click="goToBookDetails(book._id)">
                     <!-- Book Image -->
                     <img :src="book.image" :alt="book.title" class="book-image me-3" />
 
@@ -71,6 +72,14 @@ export default {
         getRandomBooks(books, count) {
             const shuffled = books.sort(() => 0.5 - Math.random());
             return shuffled.slice(0, count);
+        },
+
+        /**
+         * Navigates to the Book Details page with the given ID.
+         * @param {string} id - The ID of the book to view details.
+         */
+         goToBookDetails(id) {
+            this.$router.push({ name: 'BookDetails', params: { id } });
         },
     },
     mounted() {

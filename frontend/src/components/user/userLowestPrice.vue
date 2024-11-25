@@ -15,7 +15,8 @@
                             <div class="d-flex justify-content-center">
                                 <!-- Loop through the chunk of 4 items -->
                                 <div v-for="(item, itemIndex) in chunk" :key="`${chunkIndex}-${itemIndex}`"
-                                    class="card mx-4" style="width: 200px;">
+                                    class="card mx-4" style="width: 200px; cursor: pointer;" 
+                                    @click="goToBookDetails(item._id)">
                                     <img :src="item.image" :alt="item.title" class="card-img-top"
                                         style="height: 250px; object-fit: fill;" />
                                     <div class="card-body d-flex flex-column justify-content-center align-items-center">
@@ -78,6 +79,14 @@ export default {
                 result.push(arr.slice(i, i + size));
             }
             return result;
+        },
+
+        /**
+         * Navigates to the Book Details page with the given ID.
+         * @param {string} id - The ID of the book to view details.
+         */
+         goToBookDetails(id) {
+            this.$router.push({ name: 'BookDetails', params: { id } });
         },
 
         /**

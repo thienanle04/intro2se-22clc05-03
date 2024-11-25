@@ -5,7 +5,6 @@ const router = createRouter({
   routes: [
     {
       path: '/',
-      name: 'home',
       component: () => import('@/views/UserView.vue'),
       children: [
         {
@@ -13,17 +12,22 @@ const router = createRouter({
           name: 'HomeBody',
           component: () => import('@/components/user/homeBody.vue'),
         },
+        {
+          path: 'login',
+          name: 'Login',
+          component: () => import('@/components/user/login.vue'),
+        },
+        {
+          path: 'signup',
+          name: 'Signup',
+          component: () => import('@/components/user/signup.vue'),
+        },
+        {
+          path: 'book/:id',
+          name: 'BookDetails',
+          component: () => import('@/components/user/bookDetails.vue'),
+        },
       ],
-    },
-    {
-      path: '/login',
-      name: 'Login',
-      component: () => import('@/components/user/login.vue'),
-    },
-    {
-      path: '/signup',
-      name: 'Signup',
-      component: () => import('@/components/user/signup.vue'),
     },
     {
       path: '/shop',

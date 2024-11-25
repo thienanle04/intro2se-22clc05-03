@@ -1,25 +1,26 @@
 <template>
     <div class="row justify-content-center">
         <div class="col-md-11">
-                <div class="position-relative mb-3">
-                    <h4 class="text-center mb-0">Top Ratings</h4>
-                    
-                    <a href="#" class="text-danger small position-absolute" style="top: 20px; right: 0;">View All</a>
-                </div>
+            <div class="position-relative mb-3">
+                <h4 class="text-center mb-0">Top Ratings</h4>
+
+                <a href="#" class="text-danger small position-absolute" style="top: 20px; right: 0;">View All</a>
+            </div>
             <div>
                 <div id="topRatingCarousel" class="carousel carousel-dark slide" data-bs-ride="carousel">
                     <div class="carousel-inner d-flex align-items-center " style="height: 450px;">
                         <!-- Group items in sets of 4 -->
-                        <div v-for="(chunk, chunkIndex) in chunkArray(topRating.data?.books || [], 4)"
-                            :key="chunkIndex" class="carousel-item" :class="{ active: chunkIndex === 0 }">
+                        <div v-for="(chunk, chunkIndex) in chunkArray(topRating.data?.books || [], 4)" :key="chunkIndex"
+                            class="carousel-item" :class="{ active: chunkIndex === 0 }">
                             <div class="d-flex justify-content-center">
                                 <!-- Loop through the chunk of 4 items -->
                                 <div v-for="(item, itemIndex) in chunk" :key="`${chunkIndex}-${itemIndex}`"
-                                    class="card mx-4" style="width: 200px;">
+                                    class="card mx-4" style="width: 200px; cursor: pointer;"
+                                    @click="goToBookDetails(item._id)">
                                     <img :src="item.image" :alt="item.title" class="card-img-top"
                                         style="height: 250px; object-fit: fill;" />
                                     <div class="card-body d-flex flex-column justify-content-center align-items-center">
-                                        <div class="card-title text-center" >
+                                        <div class="card-title text-center">
                                             {{ item.title }}
                                         </div>
                                         <div class="card-author text-center mb-2" style="font-size: 14px;">
@@ -59,7 +60,7 @@
 
 <script>
 export default {
-    name: 'userBestSeller',
+    name: 'userTopRating',
     data() {
         return {
             topRating: {} // Initialize as an object to hold data, not an array
@@ -80,6 +81,14 @@ export default {
             return result;
         },
 
+        /**
+         * Navigates to the Book Details page with the given ID.
+         * @param {string} id - The ID of the book to view details.
+         */
+        goToBookDetails(id) {
+            this.$router.push({ name: 'BookDetails', params: { id } });
+        },
+        
         /**
          * Fetches all books data from the API.
          */
@@ -112,39 +121,42 @@ export default {
 
 
 <style scoped>
-    .card-title {
-        text-align: center;
-        font-weight: bold;
-        margin-top: 0.5rem;
-        font-size: 0.9rem;
-        max-width: 100%;
-        white-space: nowrap; /* Prevent line breaks */
-        overflow: hidden; /* Hide overflow text */
-        text-overflow: ellipsis; /* Add ellipsis (...) */
-    }
+.card-title {
+    text-align: center;
+    font-weight: bold;
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+    max-width: 100%;
+    white-space: nowrap;
+    /* Prevent line breaks */
+    overflow: hidden;
+    /* Hide overflow text */
+    text-overflow: ellipsis;
+    /* Add ellipsis (...) */
+}
 
-    .carousel-inner {
-        background-color: none;
-        /* Optional: Add a background color */
-    }
+.carousel-inner {
+    background-color: none;
+    /* Optional: Add a background color */
+}
 
-    .carousel-control-prev-icon,
-    .carousel-control-next-icon {
-        filter: invert(1);
-        /* Ensure visibility on light backgrounds */
-    }
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+    filter: invert(1);
+    /* Ensure visibility on light backgrounds */
+}
 
-    .card-author,
-    .card-price {
-        display: block;
-        text-align: center;
-        width: 100%;
-    }
+.card-author,
+.card-price {
+    display: block;
+    text-align: center;
+    width: 100%;
+}
 
-    .card-body {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-    }
+.card-body {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
 </style>
