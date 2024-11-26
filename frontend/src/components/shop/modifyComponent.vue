@@ -20,7 +20,6 @@
             </div>
         </div>
         <div v-if="booksToModify.length > 0">
-            <h5 class="mt-3">Books found:</h5>
             <ul class="list-group mb-3">
                 <li class="list-group-item" v-for="book in booksToModify" :key="book._id">
                     <div>
@@ -76,6 +75,9 @@ export default {
         bookTitle() {
             this.searchBooks();
         }
+    },
+    async created () {
+        this.booksToModify = await this.getAllBooks();
     },
     methods: {
         async getAllBooks() {

@@ -20,7 +20,6 @@
         </div>
     </div>
     <div v-if="booksToDelete.length > 0">
-        <h5 class="mt-3">Books found:</h5>
         <ul class="list-group mb-3">
             <li class="list-group-item" v-for="book in booksToDelete" :key="book._id">
                 <div>
@@ -55,6 +54,9 @@ export default {
             selectedBook: null // Sách đã chọn để xoá
         };
     },
+    async created() {
+        this.booksToDelete = await this.getAllBooks();
+    },
     watch: {
         // Watchers để theo dõi sự thay đổi của ISBN và bookTitle và gọi searchBooks
         isbn() {
@@ -68,7 +70,7 @@ export default {
         // Hàm tìm sách có ISBN và Tên sách trùng
         async searchBooks() {
             if (!this.isbn && !this.bookTitle) {
-                this.booksToDelete = [];
+                this.booksToDelete = this.getAllBooks();
                 return;
             }
             
@@ -128,7 +130,6 @@ export default {
                 }
                 
                 const data = await response.json();
-                console.log(data); // Handle the response data (e.g., success message)
                 
                 alert(`Book "${this.selectedBook.Title}" has been deleted.`);
                 
@@ -148,7 +149,6 @@ export default {
             // Dữ liệu giả lập, thay thế bằng API thực tế
             const res = await fetch('http://localhost:8081/api/v1/books');
             const data = await res.json();
-            console.log(data.data.books);
             return data.data.books;
         }
     },
