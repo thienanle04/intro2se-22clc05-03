@@ -34,26 +34,20 @@ const router = createRouter({
       name: 'shop',
       meta: { requiresAuth: true, roles: ['admin'] },
       component: () => import('@/views/ShopView.vue'),
-      redirect: '/shop/add', // Redirect to /shop/add by default
+      redirect: '/shop/modify', // Redirect to /shop/add by default
       children: [
         {
           path: 'add',
           name: 'AddNewBook',
           meta: { requiresAuth: true, roles: ['admin'] },
-          component: () => import('@/components/shop/addComponent.vue'),
+          component: () => import('@/components/shop/addBookComp.vue'),
         },
         {
           path: 'modify',
-          name: 'ModifyBook',
+          name: 'ModifyAndDeleteBook',
           meta: { requiresAuth: true, roles: ['admin'] },
-          component: () => import('@/components/shop/modifyComponent.vue'),
-        },
-        {
-          path: 'delete',
-          name: 'DeleteBook',
-          meta: { requiresAuth: true, roles: ['admin'] },
-          component: () => import('@/components/shop/deleteComponent.vue'),
-        },
+          component: () => import('@/components/shop/modifyBookComp.vue'),
+        }
       ],
     }    
   ],

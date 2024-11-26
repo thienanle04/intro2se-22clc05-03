@@ -31,9 +31,6 @@
                 <li>
                   <router-link to="/shop/modify" class="dropdown-item">Modify Book</router-link>
                 </li>
-                <li>
-                  <router-link to="/shop/delete" class="dropdown-item">Delete Book</router-link>
-                </li>
               </ul>
             </li>
 
