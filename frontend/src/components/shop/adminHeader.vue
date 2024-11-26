@@ -1,77 +1,89 @@
 <template>
-    <header>
-      <nav class="navbar navbar-expand-lg bg-primary">
-        <div class="container-fluid">
-          <!-- Brand/Logo -->
-          <a class="navbar-brand" href="#">
-            Home
-          </a>
-  
-          <!-- Toggler for mobile view -->
-          <button
-            class="navbar-toggler"
-            type="button"
-            data-bs-toggle="collapse"
-            data-bs-target="#navbarNav"
-            aria-controls="navbarNav"
-            aria-expanded="false"
-            aria-label="Toggle navigation"
-          >
-            <span class="navbar-toggler-icon"></span>
-          </button>
-  
-          <!-- Navigation Links -->
-          <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav me-auto">
-              <li class="nav-item">
-                <RouterLink to="/shop/users" class="nav-link">User Management</RouterLink>
-              </li>
-              <li class="nav-item">
-                <RouterLink to="/shop/analytics" class="nav-link">Analytics</RouterLink>
-              </li>
-              <li class="nav-item">
-                <RouterLink to="/shop/settings" class="nav-link">Settings</RouterLink>
-              </li>
-            </ul>
-  
-            <!-- Logout Button -->
-            <div class="d-flex">
-              <button @click="logout" class="btn btn-danger btn-sm">
-                Logout
-              </button>
-            </div>
+  <header>
+    <nav class="navbar navbar-expand-lg bg-primary">
+      <div class="container-fluid">
+        <!-- Brand/Logo -->
+        <a class="navbar-brand" href="#">
+          Home
+        </a>
+
+        <!-- Toggler for mobile view -->
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+          aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <!-- Navigation Links -->
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav me-auto">
+            <li class="nav-item">
+              <RouterLink to="/shop/users" class="nav-link">User Management</RouterLink>
+            </li>
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle text-light" href="#" role="button" data-bs-toggle="dropdown"
+                aria-expanded="false">
+                Book Management
+              </a>
+              <ul class="dropdown-menu dropdown-menu-dark shadow">
+                <li>
+                  <router-link to="/shop/add" class="dropdown-item">Add Book</router-link>
+                </li>
+                <li>
+                  <router-link to="/shop/modify" class="dropdown-item">Modify Book</router-link>
+                </li>
+                <li>
+                  <router-link to="/shop/delete" class="dropdown-item">Delete Book</router-link>
+                </li>
+              </ul>
+            </li>
+
+            <li class="nav-item">
+              <RouterLink to="/shop/analytics" class="nav-link">Analytics</RouterLink>
+            </li>
+            <li class="nav-item">
+              <RouterLink to="/shop/settings" class="nav-link">Settings</RouterLink>
+            </li>
+          </ul>
+
+          <!-- Logout Button -->
+          <div class="d-flex">
+            <button @click="logout" class="btn btn-danger btn-sm">
+              Logout
+            </button>
           </div>
         </div>
-      </nav>
-    </header>
-  </template>
-  
-  <script>
-  export default {
-    name: "adminHeader",
-    methods: {
-      logout() {
-        // Clear token and redirect to login
-        localStorage.removeItem("authToken");
-        localStorage.removeItem("isAuthenticated");
-        localStorage.removeItem('userRole');
-        this.$router.push("/");
-      },
+      </div>
+    </nav>
+  </header>
+</template>
+
+<script>
+export default {
+  name: "adminHeader",
+  methods: {
+    logout() {
+      // Clear token and redirect to login
+      localStorage.removeItem("authToken");
+      localStorage.removeItem("isAuthenticated");
+      localStorage.removeItem('userRole');
+      this.$router.push("/");
     },
-  };
-  </script>
-  
-  <style scoped>
-  /* Customize header styles */
-  .navbar-brand {
-    font-weight: bold;
-    font-size: 1.25rem;
-  }
-  .nav-link {
-    color: #ffffff !important;
-  }
-  .nav-link:hover {
-    text-decoration: underline;
-  }
-  </style>
-  
+  },
+};
+</script>
+
+<style scoped>
+/* Customize header styles */
+.navbar-brand {
+  font-weight: bold;
+  font-size: 1.25rem;
+}
+
+.nav-link {
+  color: #ffffff !important;
+}
+
+.nav-link:hover {
+  text-decoration: underline;
+}
+</style>
