@@ -7,10 +7,10 @@
                     <div class="row w-100 align-items-start" style="height: 50px;">
                         <!-- Left Section: Logo -->
                         <div class="col-2 d-flex align-items-start">
-                            <a href="#" class="text-dark d-flex align-items-center" style="text-decoration: none;">
+                            <RouterLink to="/" class="text-dark d-flex align-items-center" style="text-decoration: none;">
                                 <span style="font-size: 3rem; line-height: 0.7;">📚</span>
                                 <span style="font-weight: bold; color: #dc3545; margin-left: 0.7rem;">BOOKSHOP</span>
-                            </a>
+                            </RouterLink>
                         </div>
                         <!-- Center Section: Search Bar -->
                         <div class="col-8 d-flex justify-content-center">
