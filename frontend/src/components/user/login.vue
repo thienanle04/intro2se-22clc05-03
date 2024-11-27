@@ -17,14 +17,9 @@
                             <input type="password" class="form-control" id="password" placeholder="Enter your password"
                                 required>
                         </div>
-                        <!-- Remember Me Checkbox -->
-                        <div class="form-check mb-3">
-                            <input class="form-check-input" type="checkbox" id="rememberMe">
-                            <label class="form-check-label" for="rememberMe">
-                                Remember me
-                            </label>
-                        </div>
+
                         <div id="loginError"></div>
+                        
                         <!-- Privacy Notice -->
                         <p class="small mb-4">
                             By creating an account, you agree to Bookshop.org's
@@ -81,7 +76,8 @@ export default {
                     $('#loginError').addClass('alert alert-danger').text("Login failed").attr('role', 'alert');
                 }
             }).fail((err) => {
-                $('#loginError').addClass('alert alert-danger').text(err.responseJSON.message ? err.responseJSON : 'Login failed').attr('role', 'alert');
+                const message = err?.responseJSON?.message ?? 'Login failed';
+                $('#loginError').addClass('alert alert-danger').text(message).attr('role', 'alert');
             });
         }
     }

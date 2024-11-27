@@ -16,11 +16,13 @@ const router = createRouter({
         {
           path: '/login',
           name: 'Login',
+          meta: { preventAuthenticated: true },
           component: () => import('@/components/user/login.vue'),
         },
         {
           path: '/signup',
           name: 'Signup',
+          meta: { preventAuthenticated: true },
           component: () => import('@/components/user/signup.vue'),
         }
       ]
@@ -38,7 +40,10 @@ router.beforeEach((to, from, next) => {
   const isAuthenticated = !!localStorage.getItem('authToken');
   const userRole = localStorage.getItem('userRole');
 
-  if (to.meta.requiresAuth && !isAuthenticated) {
+  if (to.meta.preventAuthenticated && isAuthenticated) {
+    alert('You are already logged in');
+    next({ name: 'home' , query: { redirect: to.fullPath }});
+  } else if (to.meta.requiresAuth && !isAuthenticated) {
     next({ name: 'Login', query: { redirect: to.fullPath } });
   } else if (to.meta.roles && !to.meta.roles.includes(userRole)) {
     // If the route requires specific roles and the user doesn't have access

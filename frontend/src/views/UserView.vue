@@ -15,31 +15,6 @@ import userHeader from '@/components/user/userHeader.vue'
 
 <script>
 export default {
-    name: 'userView',
-    data() {
-        return {
-            currentComponent: 'comLogin', // Current component to display
-        }
-    },
-    provide() {
-        return {
-        }
-    },
-    computed: {
-    },
-    methods: {
-        LoggedIn() {
-            this.currentComponent = 'comHome';
-        },
-        goLogin() {
-            this.currentComponent = 'comLogin';
-        },
-        goHome() {
-            this.currentComponent = 'comHome';
-        },
-        goSignup() {
-            this.currentComponent = 'comSignUp';
-        },
-    },
-  }
+    name: 'UserView',
+}
 </script>

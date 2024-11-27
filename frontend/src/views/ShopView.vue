@@ -1,8 +1,8 @@
 <script setup>
 import { RouterLink, RouterView } from 'vue-router'
-import addComponent from "../components/shop/addComponent.vue";
-import deleteComponent from "../components/shop/deleteComponent.vue";
-import modifyComponent from "../components/shop/modifyComponent.vue";
+import addComponent from "../components/shop/addNewBook.vue";
+import deleteComponent from "../components/shop/deleteBook.vue";
+import modifyComponent from "../components/shop/modifyBook.vue";
 import { ref } from 'vue';
 import adminHeader from '../components/shop/adminHeader.vue';
 </script>

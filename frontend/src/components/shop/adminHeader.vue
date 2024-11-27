@@ -27,10 +27,10 @@
                 <RouterLink to="/shop/users" class="nav-link">User Management</RouterLink>
               </li>
               <li class="nav-item">
-                <RouterLink to="/shop/analytics" class="nav-link">Analytics</RouterLink>
+                <RouterLink to="/shop/orders" class="nav-link">Order Management</RouterLink>
               </li>
               <li class="nav-item">
-                <RouterLink to="/shop/settings" class="nav-link">Settings</RouterLink>
+                <RouterLink to="/shop/analytics" class="nav-link">Analytics</RouterLink>
               </li>
             </ul>
   
