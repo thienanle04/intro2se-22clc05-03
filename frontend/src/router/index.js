@@ -27,6 +27,12 @@ const router = createRouter({
           name: 'BookDetails',
           component: () => import('@/components/user/bookDetails.vue'),
         },
+        {
+          path: 'search',
+          name: 'SearchResults',
+          component: () => import('@/components/user/bookSearch.vue'),
+          props: (route) => ({ searchText: route.query.q }), // Pass search text as a prop
+        },
       ],
     },
     {
