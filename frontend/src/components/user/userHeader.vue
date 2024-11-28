@@ -7,24 +7,27 @@
                     <div class="row w-100 align-items-start" style="height: 50px;">
                         <!-- Left Section: Logo -->
                         <div class="col-2 d-flex align-items-start">
-                            <a href="#" class="text-dark d-flex align-items-center" style="text-decoration: none;">
+                            <RouterLink to="/" class="text-dark d-flex align-items-center"
+                                style="text-decoration: none;">
                                 <span style="font-size: 3rem; line-height: 0.7;">📚</span>
                                 <span style="font-weight: bold; color: #dc3545; margin-left: 0.7rem;">BOOKSHOP</span>
-                            </a>
+                            </RouterLink>
                         </div>
                         <!-- Center Section: Search Bar -->
                         <div class="col-8 d-flex justify-content-center">
                             <form class="d-flex w-75" role="search">
-                                <input v-model="searchQuery" class="form-control px-4" type="search"
-                                    placeholder="🔍 Search book titles, authors, publishers..." aria-label="Search" />
+                                <input class="form-control px-4" type="search"
+                                    placeholder="🔍 Search book titles, authors, publishers..." v-model="searchInput"
+                                    aria-label="Search" />
+                                    <button class="btn btn-outline-success" type="submit" @click="performSearch">Search</button>
                             </form>
                         </div>
 
                         <!-- Right Section: Icons -->
                         <div class="col-2 d-flex justify-content-end align-items-center">
-                            <a href="#" class="text-dark me-3">
+                            <RouterLink to="/login" class="text-dark me-3">
                                 <span>Login</span>
-                            </a>
+                            </RouterLink>
                             <span class="text-dark me-3">|</span>
                             <a href="#" class="text-dark me-3">
                                 <i class="bi bi-cart3 fs-4"></i>
@@ -68,41 +71,41 @@
 
 
 <style scoped>
-    .full-header {
-        height: 100px;
-    }
+.full-header {
+    height: 100px;
+}
 
+.categories {
+    position: absolute;
+    top: 30px;
+    left: 0;
+    width: 100%;
+    z-index: 1;
+    display: flex;
+    justify-content: center;
+}
+
+/* Hide categories when the screen width is smaller than 768px */
+@media (max-width: 1000px) {
     .categories {
-        position: absolute;
-        top: 30px;
-        left: 0;
-        width: 100%;
-        z-index: 1;
-        display: flex;
-        justify-content: center;
+        display: none;
     }
 
-    /* Hide categories when the screen width is smaller than 768px */
-    @media (max-width: 1000px) {
-        .categories {
-            display: none;
-        }
-
-        .full-header {
-            height: 80px;
-        }
-
+    .full-header {
+        height: 80px;
     }
 
-    /* Categories button alignment */
-    .category-button {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0.3rem;
-        font-size: 0.8rem;
-        width: 10%;
-    }
+}
+
+/* Categories button alignment */
+.category-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.3rem;
+    font-size: 0.8rem;
+    width: 10%;
+}
 </style>
 
 <script>
@@ -111,10 +114,16 @@ export default {
     name: 'userHeader',
     data() {
         return {
+            searchInput: '',
         }
     },
     methods: {
-
+        performSearch(event) {
+            event.preventDefault();
+            if (this.searchInput.trim()) {
+                this.$router.push({ name: 'SearchResults', query: { q: this.searchInput } });
+            }
+        },
     }
 }
 </script>

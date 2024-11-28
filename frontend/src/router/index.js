@@ -5,36 +5,62 @@ const router = createRouter({
   routes: [
     {
       path: '/',
-      name: 'home',
       component: () => import('@/views/UserView.vue'),
       children: [
         {
           path: '',
           name: 'HomeBody',
-          // component: () => import('@/components/user/home.vue')
+          component: () => import('@/components/user/homeBody.vue'),
         },
         {
-          path: '/login',
+          path: 'login',
           name: 'Login',
           meta: { preventAuthenticated: true },
           component: () => import('@/components/user/login.vue'),
         },
         {
-          path: '/signup',
+          path: 'signup',
           name: 'Signup',
           meta: { preventAuthenticated: true },
           component: () => import('@/components/user/signup.vue'),
-        }
-      ]
+        },
+        {
+          path: 'book/:id',
+          name: 'BookDetails',
+          component: () => import('@/components/user/bookDetails.vue'),
+        },
+        {
+          path: 'search',
+          name: 'SearchResults',
+          component: () => import('@/components/user/bookSearch.vue'),
+          props: (route) => ({ searchText: route.query.q }), // Pass search text as a prop
+        },
+      ],
     },
     {
       path: '/shop',
       name: 'shop',
       meta: { requiresAuth: true, roles: ['admin'] },
       component: () => import('@/views/ShopView.vue'),
-    },
+      redirect: '/shop/modify', // Redirect to /shop/add by default
+      children: [
+        {
+          path: 'add',
+          name: 'AddNewBook',
+          meta: { requiresAuth: true, roles: ['admin'] },
+          component: () => import('@/components/shop/addBookComp.vue'),
+        },
+        {
+          path: 'modify',
+          name: 'ModifyAndDeleteBook',
+          meta: { requiresAuth: true, roles: ['admin'] },
+          component: () => import('@/components/shop/modifyBookComp.vue'),
+        }
+      ],
+    }    
   ],
-})
+});
+
 
 router.beforeEach((to, from, next) => {
   const isAuthenticated = !!localStorage.getItem('authToken');
