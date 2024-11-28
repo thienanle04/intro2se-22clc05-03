@@ -107,8 +107,7 @@ export default {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        // Uncomment if using token authentication
-                        // 'Authorization': `Bearer ${token}`,
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
                     },
                     body: JSON.stringify(bookData), // Send the book data as JSON
                 });

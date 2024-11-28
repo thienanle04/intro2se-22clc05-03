@@ -19,21 +19,9 @@
             <li class="nav-item">
               <RouterLink to="/shop/users" class="nav-link">User Management</RouterLink>
             </li>
-            <li class="nav-item dropdown">
-              <a class="nav-link dropdown-toggle text-light" href="#" role="button" data-bs-toggle="dropdown"
-                aria-expanded="false">
-                Book Management
-              </a>
-              <ul class="dropdown-menu dropdown-menu-dark shadow">
-                <li>
-                  <router-link to="/shop/add" class="dropdown-item">Add Book</router-link>
-                </li>
-                <li>
-                  <router-link to="/shop/modify" class="dropdown-item">Modify Book</router-link>
-                </li>
-              </ul>
+            <li class="nav-item">
+              <RouterLink to="/shop/modify" class="nav-link">Book Management</RouterLink>
             </li>
-
             <li class="nav-item">
               <RouterLink to="/shop/analytics" class="nav-link">Analytics</RouterLink>
             </li>

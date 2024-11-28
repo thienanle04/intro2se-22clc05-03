@@ -1,7 +1,10 @@
 <template>
     <div class="card">
-        <div class="card-header mb-3">
+        <div class="card-header mb-3 d-flex justify-content-between align-items-center">
             <h3>Modify And Delete Book</h3>
+            <RouterLink to="/shop/add" class="btn btn-danger">
+                Add
+            </RouterLink>
         </div>
         <div class="row d-flex align-items-center mb-3">
             <div class="col-5 text-end">
@@ -23,65 +26,125 @@
         <div v-if="booksToModify.length > 0">
             <ul class="list-group mb-3">
                 <li class="list-group-item" v-for="book in booksToModify" :key="book._id">
-                    <div>
-                        <strong>{{ book.title }}</strong> - {{ book.author }}
-                        <br>
-                        <small>ID: {{ book._id }}</small>
-                        <button class="btn btn-sm btn-info float-end" @click="selectBook(book)">Edit</button>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>{{ book.title }}</strong> - {{ book.author }}
+                            <br>
+                            <small>ISBN: {{ book.SBN }}</small>
+                            <br>
+                            <small>Stock: {{ book.stock }}</small>
+                        </div>
+                        <img :src="book.image" alt="Book Image" class="rounded book-image">
+                    </div>
+                    <button class="btn btn-sm btn-info ms-auto" @click="selectBook(book)"
+                        v-if="!selectedBook || selectedBook._id !== book._id">
+                        Edit
+                    </button>
+                    <div v-if="selectedBook && selectedBook._id === book._id">
+                        <div class="alert alert-info d-flex justify-content-between align-items-center mb-4">
+                            <div>
+                                <strong>Editing:</strong> {{ selectedBook.title }} by {{ selectedBook.author }}
+                            </div>
+                            <button type="button" class="btn btn-danger btn-sm" @click="deleteBook">Delete Selected
+                                Book</button>
+                        </div>
+
+                        <div class="card shadow-sm">
+                            <div class="card-body">
+                                <form>
+                                    <!-- Title Input -->
+                                    <div class="mb-3">
+                                        <label for="bookTitle" class="form-label">Title</label>
+                                        <input type="text" id="bookTitle" class="form-control"
+                                            v-model="modifiedBook.title" placeholder="Enter book title">
+                                    </div>
+
+                                    <!-- Author Input -->
+                                    <div class="mb-3">
+                                        <label for="bookAuthor" class="form-label">Author</label>
+                                        <input type="text" id="bookAuthor" class="form-control"
+                                            v-model="modifiedBook.author" placeholder="Enter author's name">
+                                    </div>
+
+                                    <!-- Stock Input -->
+                                    <div class="mb-3">
+                                        <label for="bookStock" class="form-label">Stock</label>
+                                        <input type="number" id="bookStock" class="form-control"
+                                            v-model="modifiedBook.stock" placeholder="Enter stock quantity" min="0">
+                                    </div>
+
+                                    <!-- Genre Input -->
+                                    <div class="mb-3">
+                                        <label for="bookGenre" class="form-label">Genre</label>
+                                        <input type="text" id="bookGenre" class="form-control"
+                                            v-model="modifiedBook.genre" placeholder="Enter genre">
+                                    </div>
+
+                                    <!-- Image URL Input -->
+                                    <div class="mb-3">
+                                        <label for="bookImage" class="form-label">Image URL</label>
+                                        <input type="url" id="bookImage" class="form-control"
+                                            v-model="modifiedBook.image" placeholder="Enter image URL">
+                                    </div>
+
+                                    <!-- Description Input -->
+                                    <div class="mb-3">
+                                        <label for="bookDescription" class="form-label">Description</label>
+                                        <textarea id="bookDescription" class="form-control" rows="3"
+                                            v-model="modifiedBook.description"
+                                            placeholder="Enter book description"></textarea>
+                                    </div>
+
+                                    <!-- Price Input -->
+                                    <div class="mb-3">
+                                        <label for="bookPrice" class="form-label">Price</label>
+                                        <input type="number" id="bookPrice" class="form-control"
+                                            v-model="modifiedBook.price" placeholder="Enter price" min="0" step="0.01">
+                                    </div>
+
+                                    <!-- Rating Input -->
+                                    <div class="mb-3">
+                                        <label for="bookRating" class="form-label">Rating</label>
+                                        <input type="number" id="bookRating" class="form-control"
+                                            v-model="modifiedBook.rating" placeholder="Enter rating (1-5)" min="1"
+                                            max="5" step="0.1">
+                                    </div>
+
+                                    <!-- ISBN Input -->
+                                    <div class="mb-3">
+                                        <label for="bookISBN" class="form-label">ISBN</label>
+                                        <input type="text" id="bookISBN" class="form-control"
+                                            v-model="modifiedBook.SBN" placeholder="Enter ISBN">
+                                    </div>
+
+                                    <!-- Action Buttons -->
+                                    <div class="d-flex justify-content-between">
+                                        <button type="button" class="btn btn-success" @click="saveChanges">Save
+                                            Changes</button>
+                                        <button type="button" class="btn btn-secondary"
+                                            @click="selectedBook = null">Cancel</button>
+                                    </div>
+                                </form>
+
+                            </div>
+                        </div>
                     </div>
                 </li>
             </ul>
         </div>
-        <div v-if="selectedBook">
-            <div class="alert alert-info d-flex justify-content-between align-items-center mb-4">
-                <div>
-                    <strong>Editing:</strong> {{ selectedBook.title }} by {{ selectedBook.author }}
-                </div>
-                <button type="button" class="btn btn-danger btn-sm" @click="deleteBook">Delete Selected Book</button>
-            </div>
-
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <form>
-                        <!-- Title Input -->
-                        <div class="mb-3">
-                            <label for="bookTitle" class="form-label">Title</label>
-                            <input type="text" id="bookTitle" class="form-control" v-model="modifiedBook.title"
-                                placeholder="Enter book title">
-                        </div>
-
-                        <!-- Author Input -->
-                        <div class="mb-3">
-                            <label for="bookAuthor" class="form-label">Author</label>
-                            <input type="text" id="bookAuthor" class="form-control" v-model="modifiedBook.author"
-                                placeholder="Enter author's name">
-                        </div>
-
-                        <!-- Year Input -->
-                        <div class="mb-3">
-                            <label for="bookYear" class="form-label">Year</label>
-                            <input type="number" id="bookYear" class="form-control" v-model="modifiedBook.year"
-                                placeholder="Enter publication year" min="0">
-                        </div>
-
-                        <!-- Action Buttons -->
-                        <div class="d-flex justify-content-between">
-                            <button type="button" class="btn btn-success" @click="saveChanges">Save Changes</button>
-                            <button type="button" class="btn btn-secondary" @click="selectedBook = null">Cancel</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-
-        <div v-else>
-            <p class="text-muted">Please select a book to modify.</p>
-        </div>
-
     </div>
 </template>
+<style>
+.book-image {
+    width: 100px;
+    height: 100%;
+    object-fit: contain;
+    border-radius: 5px;
+}
+</style>
 
 <script>
+import axios from '../../axios';
 export default {
     name: "modifyComponent",
     data() {
@@ -103,6 +166,7 @@ export default {
     },
     async created() {
         this.booksToModify = await this.getAllBooks();
+        console.log('book', this.booksToModify);
     },
     methods: {
         async getAllBooks() {
@@ -151,7 +215,13 @@ export default {
             const updatedBook = {
                 title: this.modifiedBook.title,
                 author: this.modifiedBook.author,
-                year: this.modifiedBook.year,
+                stock: this.modifiedBook.stock,
+                genre: this.modifiedBook.genre,
+                image: this.modifiedBook.image,
+                description: this.modifiedBook.description,
+                price: this.price,
+                rating: this.modifiedBook.rating,
+                SBN: this.modifiedBook.SBN
             };
 
             const token = this.getAuthToken(); // Replace with actual token retrieval logic
@@ -169,23 +239,22 @@ export default {
                     method: 'DELETE', // Specify the method as DELETE
                     headers: {
                         'Content-Type': 'application/json',
-                        // Add any additional headers you need, such as authorization token
-                        // 'Authorization': `Bearer ${token}`,
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
                     },
                 });
-                
+
                 if (!response.ok) {
                     throw new Error(`Failed to delete book: ${response.statusText}`);
                 }
-                
+
                 const data = await response.json();
-                
+
                 alert(`Book "${this.selectedBook.Title}" has been deleted.`);
-                
+
                 // Optionally, remove the book from the UI list after deletion
                 this.booksToModify = this.booksToModify.filter(book => book._id !== this.selectedBook._id);
                 this.selectedBook = null; // Reset selected book
-                
+
             } catch (error) {
                 console.error('Error deleting book:', error);
                 alert('Failed to delete book. Please try again.');
@@ -198,7 +267,7 @@ export default {
                     method: 'PATCH',
                     headers: {
                         'Content-Type': 'application/json',
-                        // 'Authorization': `Bearer ${token}`, // Bearer token for authentication
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
                     },
                     body: JSON.stringify(updatedBook), // Send the updated book data in the request body
                 });
