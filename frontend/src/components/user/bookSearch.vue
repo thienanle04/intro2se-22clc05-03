@@ -8,7 +8,7 @@
             <div v-for="book in searchResults" :key="book.id" class="col-md-3 mb-4">
                 <div class="card search-result-card text-center" @click="goToBookDetails(book._id)">
                     <!-- Image -->
-                    <img :src="book.image" class="card-img-top mx-auto" alt="book.title" />
+                    <img :src="book.image" class="card-img-top mx-auto" alt="book.title" style="object-fit: fill;" />
                     <div class="card-body">
                         <!-- Title -->
                         <h5 class="title"
@@ -58,7 +58,7 @@ export default {
     methods: {
         async fetchAllBooks() {
             try {
-                const response = await fetch('http://localhost:8081/api/v1/books');
+                const response = await fetch('/api/v1/books');
                 const result = await response.json();
 
                 if (result?.data?.books && Array.isArray(result.data.books)) {
