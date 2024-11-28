@@ -1,11 +1,11 @@
 <template>
   <header>
-    <nav class="navbar navbar-expand-lg bg-primary">
+    <nav class="navbar navbar-expand-lg bg-primary mb-3 mt-3">
       <div class="container-fluid">
         <!-- Brand/Logo -->
-        <a class="navbar-brand" href="#">
+        <RouterLink to="/shop" class="navbar-brand text-warning">
           Home
-        </a>
+        </RouterLink>
 
         <!-- Toggler for mobile view -->
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
@@ -19,21 +19,9 @@
             <li class="nav-item">
               <RouterLink to="/shop/users" class="nav-link">User Management</RouterLink>
             </li>
-            <li class="nav-item dropdown">
-              <a class="nav-link dropdown-toggle text-light" href="#" role="button" data-bs-toggle="dropdown"
-                aria-expanded="false">
-                Book Management
-              </a>
-              <ul class="dropdown-menu dropdown-menu-dark shadow">
-                <li>
-                  <router-link to="/shop/add" class="dropdown-item">Add Book</router-link>
-                </li>
-                <li>
-                  <router-link to="/shop/modify" class="dropdown-item">Modify Book</router-link>
-                </li>
-              </ul>
+            <li class="nav-item">
+              <RouterLink to="/shop/modify" class="nav-link">Book Management</RouterLink>
             </li>
-
             <li class="nav-item">
               <RouterLink to="/shop/analytics" class="nav-link">Analytics</RouterLink>
             </li>
@@ -55,6 +43,8 @@
 </template>
 
 <script>
+import { RouterLink } from 'vue-router';
+
 export default {
   name: "adminHeader",
   methods: {
