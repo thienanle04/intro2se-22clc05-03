@@ -19,7 +19,7 @@
                                 <input class="form-control px-4" type="search"
                                     placeholder="🔍 Search book titles, authors, publishers..." v-model="searchInput"
                                     aria-label="Search" />
-                                    <button class="btn btn-outline-success" type="submit" @click="performSearch">Search</button>
+                                    <button class="btn btn-outline-success mx-3" type="submit" @click="performSearch">Search</button>
                             </form>
                         </div>
 

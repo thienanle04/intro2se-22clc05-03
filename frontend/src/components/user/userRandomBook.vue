@@ -13,7 +13,7 @@
                     <div class="book-details flex-grow-1">
                         <h5 class="mb-1 book-title">{{ book.title }}</h5>
                         <p class="mb-1 text-muted book-author">{{ book.author }}</p>
-                        <p class="mb-2 text-truncate book-description" style="max-width: 70%;">
+                        <p class="mb-2 book-description">
                             {{ book.description }}
                         </p>
                     </div>
@@ -122,6 +122,15 @@ export default {
 .book-description {
     font-size: 0.85rem;
     color: black;
+    max-width: 95%; /* Control the width of the description */
+    overflow: hidden; /* Hide overflow text */
+    text-overflow: ellipsis; /* Add ellipsis (...) when the text overflows */
+    display: -webkit-box; /* Use flexbox for line clamping */
+    text-align: justify; /* Justify the text */
+    -webkit-line-clamp: 3; /* Limit to 3 lines (you can adjust this number) */
+    line-clamp: 3; /* Standard property for compatibility */
+    -webkit-box-orient: vertical; /* Align text vertically */
+    word-wrap: break-word; /* Allow long words to break and wrap */
 }
 
 .book-actions {

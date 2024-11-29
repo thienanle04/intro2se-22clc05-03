@@ -90,9 +90,19 @@ class BookController {
   async getBookById(req, res) {
     try {
       const book = await Book.findById(req.params.bookId);
+
+      const genreId = book.genre;
+      const genre = await Genre.findById(genreId);
+
+      // Modify the genre in the response object, but not in the database
+      const bookWithGenreName = {
+        ...book.toObject(),
+        genre: genre.name  // Add the genre name in place of the genre ObjectId
+      };
+
       res.status(200).json({
         data: {
-          book,
+          book: bookWithGenreName
         },
         message: 'Get book by bookId successfully',
         code: 1
@@ -182,7 +192,7 @@ class BookController {
       }
       // await book.remove();
       await Book.findByIdAndDelete(bookId);
-      
+
       res.status(200).json({
         data: null,
         message: 'Delete book by bookId successfully',
