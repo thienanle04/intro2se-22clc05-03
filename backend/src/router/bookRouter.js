@@ -1,5 +1,5 @@
 const express = require('express');
-const Authentication = require('../middleware/verifyToken');
+const Authentication = require('../middleware/verifyToken.js');
 const router = express.Router();
 const bookController = require('../controller/bookController.js');
 const upload = require('../config/cloudinary.config.js');

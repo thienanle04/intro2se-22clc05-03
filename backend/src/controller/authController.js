@@ -1,5 +1,5 @@
 const User = require('../models/Users');
-const generateToken = require('../middleware/generateToken');
+const generateToken = require('../middleware/generateToken.js');
 const bcrypt = require('bcryptjs');
 
 
@@ -29,12 +29,13 @@ class AuthController {
           return res.status(200).json({
             data: token,
             message: 'Login success',
-            code: 1
+            code: 1,
+            role: user.role
           });
         } else {
-          return res.status(400).json({
+          return res.status(401).json({
             data: null,
-            message: 'Password is incorrect in file authController.js',
+            message: 'Password is incorrect',
             code: 0
           });
         }

@@ -56,10 +56,12 @@ const userSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Cart'
   },
-  order: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Order'
-  }
+  order: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Order'
+    }
+  ]
 }, { timestamps: true })
 
 const User = mongoose.model('User', userSchema);
