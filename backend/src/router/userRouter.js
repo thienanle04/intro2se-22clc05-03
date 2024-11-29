@@ -42,4 +42,23 @@ router
     Authentication.reCheckUser, 
     userController.addCart
   );
+
+// [POST] /api/v1/users/{userId}/removeCart
+router
+  .route('/:userId/removeCart')
+  .post(Authentication.authenticateToken, 
+    Authentication.reCheckUser, 
+    userController.removeCart
+  );
+
+// [POST] /api/v1/users/{userId}/payment
+router
+  .route('/:userId/payment')
+  .post(
+    // Authentication.authenticateToken, 
+    // Authentication.reCheckUser, 
+    userController.payment
+  );
+
+
 module.exports = router;
