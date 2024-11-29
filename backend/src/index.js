@@ -1,8 +1,11 @@
 const express = require('express');
+const dotenv = require('dotenv')
+dotenv.config()
 const app = express();
-const port = 8081;
+const port = process.env.PORT || 3000;
 const handlebars = require('express-handlebars');
 const path = require('path');
+
 
 // Tạo instance Handlebars và đăng ký helper
 const hbs = handlebars.create({
@@ -108,6 +111,8 @@ app.get('/login', (req, res) => {
 });
 
 
+
+
 // Sử dụng middleware
 const morgan = require('morgan');
 app.use(morgan('dev'));
@@ -122,12 +127,10 @@ app.use(express.urlencoded({ extended: true }));
 // Routes
 const userRouter = require('./router/userRouter.js');
 const authRouter = require('./router/authRouter.js');
-const uploadRouter = require('./router/cloudinary-upload');
 const bookRouter = require('./router/bookRouter.js');
 const swaggerDocs = require('./swagger.js');
 swaggerDocs(app, port);
 
-app.use('/uploads', uploadRouter);
 app.use('/api/v1/users', userRouter);
 app.use('/api/v1/auth', authRouter);
 app.use('/api/v1/books', bookRouter);

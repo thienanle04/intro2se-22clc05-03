@@ -56,7 +56,8 @@ class UserController {
   async updateMyProfile(req, res) {
     try {
       const userId = req.user.id; // Lấy ID người dùng từ JWT
-      const { email, password, name, address, phone, image } = req.body;
+      const { email, password, name, address, phone } = req.body;
+      const img = req.file;
       const user = await User.findById(userId);
 
       if (!user) {
@@ -72,7 +73,12 @@ class UserController {
       if (email) user.email = email;
       if (password) user.password = password;
       if (phone) user.phone = phone;
-      if (image) user.image = image;
+      if (img)  {
+        const public_id = user.img.split('/').pop().split('.')[0]; // Lấy public_id từ URL cũ
+        await cloudinary.uploader.destroy(public_id); // Xóa ảnh cũ khỏi Cloudinary
+        user.img = img.path;
+      }
+
 
       // Xử lý địa chỉ nếu có
       if (address) user.address.push(address);
@@ -97,18 +103,27 @@ class UserController {
   // [DELETE] /api/user/delete/:userId
   async deleteUser(req, res) {
     const userId = req.params.userId;
-
+  
     try {
-      const deletedUser = await User.deleteOne({ _id: userId });
-
-      if (deletedUser.deletedCount === 0) {
+      const user = await User.findById(userId);
+  
+      if (!user) {
         return res.status(404).json({
           data: null,
           message: `User ${userId} not found`,
           code: 0
         });
       }
-
+  
+      // Nếu có ảnh, xóa ảnh khỏi Cloudinary
+      if (user.img) {
+        const public_id = user.img.split('/').pop().split('.')[0]; // Lấy public_id từ URL ảnh
+        await cloudinary.uploader.destroy(public_id); // Xóa ảnh khỏi Cloudinary
+      }
+  
+      // Xóa người dùng khỏi cơ sở dữ liệu
+      await User.deleteOne({ _id: userId });
+  
       res.status(200).json({
         data: null,
         message: `User ${userId} deleted successfully`,
