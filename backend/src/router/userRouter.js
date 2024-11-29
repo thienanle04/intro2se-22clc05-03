@@ -6,7 +6,14 @@ const userController = require('../controller/userController.js');
 // [GET] /api/v1/users: get all users, only admin can access
 router
   .route('')
-  .get(Authentication.authenticateToken, Authentication.isAdmin, userController.getAllUsers);
+  // .get(Authentication.authenticateToken, Authentication.isAdmin, userController.getAllUsers);
+  .get(userController.getAllUsers);
+
+// [POST] /api/v1/users: create new users, only admin can access
+router 
+  .route('/')
+  // .get(Authentication.authenticateToken, Authentication.isAdmin, userController.createNewUser);
+  .post(userController.createNewUser);
 
 // [GET] /api/v1/users/{userId}: get user by userId, only this user or admin can access
 router

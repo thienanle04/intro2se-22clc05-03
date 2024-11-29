@@ -3,6 +3,8 @@ const Cart = require("../models/Cart");
 const CartItem = require("../models/CartItem");
 const Book = require("../models/Books");
 
+const bcrypt = require('bcryptjs');
+
 // req.user = { userId, username, role }
 class UserController {
   // [GET] /api/user
@@ -22,7 +24,56 @@ class UserController {
       });
     }
   }
+  // [POST] /api/users
+  async createNewUser(req, res) {
+    console.log(req.body);
+    try {
+      const {
+        name,
+        email,
+        username,
+        password,
+        phone, 
+        address,
+        image
+      } = req.body;
 
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      const userFound = await User.findOne({ username, hashedPassword });
+      if (userFound) {
+        res.status(500).json({
+          data: null,
+          message: 'User already exists',
+          code: 0
+        });
+      }
+
+      const user = new User({
+        name: name,
+        email: email,
+        username: username,
+        password: hashedPassword,
+        phone: phone, 
+        address: address,
+        image: image
+      });
+      await user.save();
+      res.status(201).json({
+        data: {
+          user,
+        },
+        message: 'Create new user successfully',
+        code: 1
+      });
+    } catch (error) {
+      res.status(500).json({
+        data: null,
+        message: 'Create new user failed with error: ' + error,
+        code: 0
+      });
+    }
+  }
   // [GET] /api/user/:userId
   async getUserById(req, res) {
     try {
