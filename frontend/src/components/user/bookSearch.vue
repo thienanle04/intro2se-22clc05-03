@@ -1,34 +1,37 @@
 <template>
-    <div>
-        <!-- Display Search Result Header with conditional message -->
-        <h3>{{ searchResults.length > 0 ? 'Search Results:' : 'Search Results: None' }}</h3>
-        
-        <!-- Display Search Results -->
-        <div class="row">
-            <div v-for="book in searchResults" :key="book.id" class="col-md-3 mb-4">
-                <div class="card search-result-card text-center" @click="goToBookDetails(book._id)">
-                    <!-- Image -->
-                    <img :src="book.image" class="card-img-top mx-auto" alt="book.title" style="object-fit: fill;" />
-                    <div class="card-body">
-                        <!-- Title -->
-                        <h5 class="title"
-                            style="font-size: 16px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                            {{ book.title }}
-                        </h5>
-                        <!-- Authors -->
-                        <p class="card-text" style="font-size: 14px;">
-                            {{ book.author }}
-                        </p>
-                        <!-- Rating -->
-                        <div class="card-rating" style="font-size: 14px; color: #f39c12;">
-                            {{ book.rating }}⭐
-                        </div>
-                        <!-- Price & Add to Cart -->
-                        <div class="card-price text-center text-danger">
-                            <a href="#" class="text-dark me-3">
-                                <i class="bi bi-cart3 fs-4"></i>
-                            </a>
-                            {{ book.price }}$
+    <div class="row my-1 w-100">
+        <div class="col-12">
+            <!-- Display Search Result Header with conditional message -->
+            <h3 class="mx-5">{{ searchResults.length > 0 ? 'Search Results:' : 'Search Results: None' }}</h3>
+
+            <!-- Display Search Results -->
+            <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-6 g-4 mx-5">
+                <div v-for="book in searchResults" :key="book.id" class="col">
+                    <div class="card text-center mx-auto" style="width: 200px;">
+                        <!-- Image -->
+                        <img :src="book.image" class="card-img-top" alt="book.title" @click="goToBookDetails(book._id)"
+                            style="height: 270px; width: 200px;object-fit: fill;" />
+                        <div class="card-body" style="min-width: 200px;">
+                            <!-- Title -->
+                            <h5 class="card-title" @click="goToBookDetails(book._id)"
+                                style="font-size: 16px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                {{ book.title }}
+                            </h5>
+                            <!-- Authors -->
+                            <p class="card-text" style="font-size: 14px;">
+                                {{ book.author }}
+                            </p>
+                            <!-- Rating -->
+                            <div class="card-rating" style="font-size: 14px; color: #f39c12;">
+                                {{ book.rating }}⭐
+                            </div>
+                            <!-- Price & Add to Cart -->
+                            <div class="card-price text-center text-danger">
+                                <button class="btn"  @click="this.$store.dispatch('addToCart', { book: book });">
+                                    <i class="bi bi-cart3 fs-4"></i>
+                                </button>
+                                {{ book.price }}$
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -99,7 +102,7 @@ export default {
          * Navigates to the Book Details page with the given ID.
          * @param {string} id - The ID of the book to view details.
          */
-         goToBookDetails(id) {
+        goToBookDetails(id) {
             this.$router.push({ name: 'BookDetails', params: { id } });
         },
     },
@@ -112,26 +115,6 @@ export default {
 </script>
 
 <style scoped>
-.search-result-card {
-    cursor: pointer;
-    display: flex;
-    flex-direction: column;
-    height: 450px;
-    justify-content: space-between;
-}
-
-.card-img-top {
-    height: 300px;
-    width: 250px;
-    object-fit: cover;
-}
-
-.card-body {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-}
-
 .title {
     font-size: 16px;
     font-weight: bold;

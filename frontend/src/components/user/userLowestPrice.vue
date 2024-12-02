@@ -1,26 +1,25 @@
 <template>
-    <div class="row justify-content-center">
+    <div class="row justify-content-center w-100">
         <div class="col-md-11">
-                <div class="position-relative mb-3">
-                    <h4 class="text-center mb-0">Lowest Price</h4>
-                    
-                    <a href="#" class="text-danger small position-absolute" style="top: 20px; right: 0;">View All</a>
-                </div>
+            <div class="position-relative mb-3">
+                <h4 class="text-center mb-0">Lowest Price</h4>
+
+                <a href="#" class="text-danger small position-absolute" style="top: 20px; right: 0;">View All</a>
+            </div>
             <div>
                 <div id="lowestPriceCarousel" class="carousel carousel-dark slide" data-bs-ride="carousel">
                     <div class="carousel-inner d-flex align-items-center" style="height: 450px;">
                         <!-- Group items in sets of 4 -->
-                        <div v-for="(chunk, chunkIndex) in chunkArray(lowPrice.data?.books || [], 4)"
-                            :key="chunkIndex" class="carousel-item" :class="{ active: chunkIndex === 0 }">
+                        <div v-for="(chunk, chunkIndex) in chunkArray(lowPrice.data?.books || [], 4)" :key="chunkIndex"
+                            class="carousel-item" :class="{ active: chunkIndex === 0 }">
                             <div class="d-flex justify-content-center">
                                 <!-- Loop through the chunk of 4 items -->
                                 <div v-for="(item, itemIndex) in chunk" :key="`${chunkIndex}-${itemIndex}`"
-                                    class="card mx-4" style="width: 200px; cursor: pointer;" 
-                                    @click="goToBookDetails(item._id)">
+                                    class="card mx-4" style="width: 200px; cursor: pointer;">
                                     <img :src="item.image" :alt="item.title" class="card-img-top"
-                                        style="height: 250px; object-fit: fill;" />
+                                        style="height: 250px; object-fit: fill;" @click="goToBookDetails(item._id)" />
                                     <div class="card-body d-flex flex-column justify-content-center align-items-center">
-                                        <div class="card-title text-center" >
+                                        <div class="card-title text-center" @click="goToBookDetails(item._id)">
                                             {{ item.title }}
                                         </div>
                                         <div class="card-author text-center mb-2" style="font-size: 14px;">
@@ -30,9 +29,9 @@
                                             {{ item.rating }}⭐
                                         </div>
                                         <div class="card-price text-center text-danger">
-                                            <a href="#" class="text-dark me-3">
+                                            <button @click="this.$store.dispatch('addToCart', { book: item });" class="btn" role="button">
                                                 <i class="bi bi-cart3 fs-4"></i>
-                                            </a>
+                                            </button>
                                             {{ item.price }}$
                                         </div>
                                     </div>
@@ -61,9 +60,10 @@
 <script>
 export default {
     name: 'userLowestPrice',
+    inject: ['books'],
     data() {
         return {
-            lowPrice: {} // Initialize as an object to hold data, not an array
+            lowPrice: {}, // Initialize as an object to hold data, not an array
         };
     },
     methods: {
@@ -85,77 +85,54 @@ export default {
          * Navigates to the Book Details page with the given ID.
          * @param {string} id - The ID of the book to view details.
          */
-         goToBookDetails(id) {
+        goToBookDetails(id) {
             this.$router.push({ name: 'BookDetails', params: { id } });
         },
-
-        /**
-         * Fetches all books data from the API.
-         */
-        async fetchBooks() {
-            try {
-                const response = await fetch('http://localhost:8081/api/v1/books');
-
-                if (response.ok) {
-                    const res = await response.json();
-                    // Sort books by rating in descending order and select the top 20
-                    const lowestPriceBooks = res.data.books
-                        .sort((a, b) => a.price - b.price)
-                        .slice(0, 20);
-
-                    this.lowPrice = { data: { books: lowestPriceBooks} };
-                    console.log('Top 20 books with lowest price:', this.lowPrice);
-                } else {
-                    console.error('Error:', response.status, response.statusText);
-                }
-            } catch (error) {
-                console.error('Error fetching books data:', error.message);
-            }
-        }
     },
     mounted() {
-        this.fetchBooks(); // Fetch all books on component mount
+        this.lowPrice = { data: { books: this.books.sort((a, b) => a.price - b.price).slice(0, 20) } };
     }
 };
 </script>
 
 
 <style scoped>
-    .card-title {
-        text-align: center;
-        font-weight: bold;
-        margin-top: 0.5rem;
-        font-size: 0.9rem;
-        max-width: 100%;
-        white-space: nowrap; /* Prevent line breaks */
-        overflow: hidden; /* Hide overflow text */
-        text-overflow: ellipsis; /* Add ellipsis (...) */
-    }
+.card-title {
+    text-align: center;
+    font-weight: bold;
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+    max-width: 100%;
+    white-space: nowrap;
+    /* Prevent line breaks */
+    overflow: hidden;
+    /* Hide overflow text */
+    text-overflow: ellipsis;
+    /* Add ellipsis (...) */
+}
 
-    .carousel-inner {
-        background-color: none;
-        /* Optional: Add a background color */
-    }
+.carousel-inner {
+    background-color: none;
+    /* Optional: Add a background color */
+}
 
-    .carousel-control-prev-icon,
-    .carousel-control-next-icon {
-        filter: invert(1);
-        /* Ensure visibility on light backgrounds */
-    }
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+    filter: invert(1);
+    /* Ensure visibility on light backgrounds */
+}
 
-    .card-author,
-    .card-price {
-        display: block;
-        text-align: center;
-        width: 100%;
-    }
+.card-author,
+.card-price {
+    display: block;
+    text-align: center;
+    width: 100%;
+}
 
-    .card-body {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-    }
-
-    
+.card-body {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
 </style>
