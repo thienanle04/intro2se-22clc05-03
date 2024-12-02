@@ -19,7 +19,8 @@
                                 <input class="form-control px-4" type="search"
                                     placeholder="🔍 Search book titles, authors, publishers..." v-model="searchInput"
                                     aria-label="Search" />
-                                    <button class="btn btn-outline-success mx-3" type="submit" @click="performSearch">Search</button>
+                                <button class="btn btn-outline-success mx-3" type="submit"
+                                    @click="performSearch">Search</button>
                             </form>
                         </div>
 
@@ -41,25 +42,32 @@
 
                     <!-- Categories (Responsive) -->
                     <div class="row w-100 mt-3 categories">
-                        <button class="btn btn-outline-secondary rounded-pill mx-2 mb-2 category-button">
-                            <i class="bi bi-book me-1"></i> Action
+                        <button class="btn btn-outline-secondary rounded-pill mx-2 mb-2 category-button"
+                            @click="performGenre('Fantasy')">
+                            <i class="bi bi-book-half me-1"></i> Fantasy
                         </button>
-                        <button class="btn btn-outline-secondary rounded-pill mx-2 mb-2 category-button">
-                            <i class="bi bi-film me-1"></i> Adventure
+                        <button class="btn btn-outline-secondary rounded-pill mx-2 mb-2 category-button"
+                            @click="performGenre('Adventure')">
+                            <i class="bi bi-geo me-1"></i> Adventure
                         </button>
-                        <button class="btn btn-outline-secondary rounded-pill mx-2 mb-2 category-button">
-                            <i class="bi bi-emoji-smile me-1"></i> Comedy
+                        <button class="btn btn-outline-secondary rounded-pill mx-2 mb-2 category-button"
+                            @click="performGenre('Classic')">
+                            <i class="bi bi-journal-richtext me-1"></i> Classic
                         </button>
-                        <button class="btn btn-outline-secondary rounded-pill mx-2 mb-2 category-button">
-                            <i class="bi bi-shield-shaded me-1"></i> Crime
+                        <button class="btn btn-outline-secondary rounded-pill mx-2 mb-2 category-button"
+                            @click="performGenre('Romance')">
+                            <i class="bi bi-heart me-1"></i> Romance
                         </button>
-                        <button class="btn btn-outline-secondary rounded-pill mx-2 mb-2 category-button">
-                            <i class="bi bi-tv me-1"></i> Drama
+                        <button class="btn btn-outline-secondary rounded-pill mx-2 mb-2 category-button"
+                            @click="performGenre('Dystopian')">
+                            <i class="bi bi-exclamation-circle me-1"></i> Dystopian
                         </button>
-                        <button class="btn btn-outline-secondary rounded-pill mx-2 mb-2 category-button">
-                            <i class="bi bi-lightning me-1"></i> Thriller
+                        <button class="btn btn-outline-secondary rounded-pill mx-2 mb-2 category-button"
+                            @click="performGenre('ComingOfAge')">
+                            <i class="bi bi-person-fill me-1"></i> ComingOfAge
                         </button>
-                        <button class="btn btn-danger rounded-pill mx-2 mb-2 category-button">
+                        <button class="btn btn-danger rounded-pill mx-2 mb-2 category-button"
+                            @click="performGenre('All')">
                             View All
                         </button>
                     </div>
@@ -68,6 +76,7 @@
         </div>
     </div>
 </template>
+
 
 
 <style scoped>
@@ -115,7 +124,7 @@ export default {
     data() {
         return {
             searchInput: '',
-        }
+        };
     },
     methods: {
         performSearch(event) {
@@ -124,6 +133,10 @@ export default {
                 this.$router.push({ name: 'SearchResults', query: { q: this.searchInput } });
             }
         },
-    }
-}
+        performGenre(genre) {
+            this.$router.push({ name: 'GenreBooks', params: { genre } });
+        },
+    },
+
+};
 </script>

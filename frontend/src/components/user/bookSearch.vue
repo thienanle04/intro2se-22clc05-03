@@ -1,11 +1,23 @@
 <template>
     <div>
-        <!-- Display Search Result Header with conditional message -->
-        <h3>{{ searchResults.length > 0 ? 'Search Results:' : 'Search Results: None' }}</h3>
-        
-        <!-- Display Search Results -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <!-- Header -->
+            <h3 class="mb-0">{{ filteredResults.length > 0 ? 'Search Results:' : 'Search Results: None' }}</h3>
+
+            <!-- Genre Dropdown and Filter Button -->
+            <div class="d-flex align-items-center">
+                <select v-model="selectedGenre" class="form-select me-2">
+                    <option value="">All Genres</option>
+                    <option v-for="genre in genres" :key="genre" :value="genre">{{ genre }}</option>
+                </select>
+                <button class="btn btn-primary" @click="filterByGenre">Filter</button>
+            </div>
+        </div>
+
+
+        <!-- Display Filtered Search Results -->
         <div class="row">
-            <div v-for="book in searchResults" :key="book.id" class="col-md-3 mb-4">
+            <div v-for="book in currentPageBooks" :key="book.id" class="col-md-3 mb-4">
                 <div class="card search-result-card text-center" @click="goToBookDetails(book._id)">
                     <!-- Image -->
                     <img :src="book.image" class="card-img-top mx-auto" alt="book.title" style="object-fit: fill;" />
@@ -34,6 +46,30 @@
                 </div>
             </div>
         </div>
+
+        <!-- Pagination Controls -->
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+                <!-- Previous Button -->
+                <li class="page-item" :class="{ disabled: currentPage <= 1 }">
+                    <a class="page-link" href="#" @click.prevent="changePage(currentPage - 1)" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+
+                <!-- Page Numbers -->
+                <li v-for="page in totalPages" :key="page" class="page-item" :class="{ active: page === currentPage }">
+                    <a class="page-link" href="#" @click.prevent="changePage(page)">{{ page }}</a>
+                </li>
+
+                <!-- Next Button -->
+                <li class="page-item" :class="{ disabled: currentPage >= totalPages }">
+                    <a class="page-link" href="#" @click.prevent="changePage(currentPage + 1)" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
     </div>
 </template>
 
@@ -49,11 +85,18 @@ export default {
     data() {
         return {
             allBooks: [],
-            searchResults: []
+            searchResults: [],
+            selectedGenre: '',
+            genres: ['Fantasy', 'Adventure', 'Classic', 'Romance', 'Dystopian', 'ComingOfAge'],
+            filteredResults: [],
+            currentPage: 1,
+            itemsPerPage: 8,
+            totalPages: 1
         };
     },
     watch: {
-        searchText: 'fetchSearchResults'
+        searchText: 'fetchSearchResults',
+        filteredResults: 'calculatePagination'
     },
     methods: {
         async fetchAllBooks() {
@@ -84,31 +127,49 @@ export default {
 
             this.allBooks.forEach((book) => {
                 const titleMatches = book.title?.toLowerCase().includes(searchTextLower);
-                const authorMatches = book.author?.toLowerCase().includes(searchTextLower)
+                const authorMatches = book.author?.toLowerCase().includes(searchTextLower);
 
-                // Use _id to avoid duplicates and check if the book is not already in results
                 if ((titleMatches || authorMatches) && !results.find((b) => b._id === book._id)) {
                     results.push(book);
                 }
             });
 
-            console.log('Search results:', results); // Log all matched books
             this.searchResults = results;
+            this.filteredResults = results; // Initialize filteredResults to show all searchResults
+            this.calculatePagination(); // Calculate pagination on search result change
         },
-        /**
-         * Navigates to the Book Details page with the given ID.
-         * @param {string} id - The ID of the book to view details.
-         */
-         goToBookDetails(id) {
-            this.$router.push({ name: 'BookDetails', params: { id } });
+        filterByGenre() {
+            if (this.selectedGenre === '') {
+                this.filteredResults = this.searchResults;
+            } else {
+                this.filteredResults = this.searchResults.filter((book) =>
+                    book.genre?.toLowerCase() === this.selectedGenre.toLowerCase()
+                );
+            }
+            this.calculatePagination(); // Recalculate pagination after filtering
         },
+        calculatePagination() {
+            this.totalPages = Math.ceil(this.filteredResults.length / this.itemsPerPage);
+            this.changePage(1); // Reset to the first page after filtering or searching
+        },
+        changePage(page) {
+            if (page < 1 || page > this.totalPages) return; // Prevent going out of bounds
+            this.currentPage = page;
+        }
     },
-
+    computed: {
+        currentPageBooks() {
+            const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+            return this.filteredResults.slice(startIndex, startIndex + this.itemsPerPage);
+        }
+    },
     async created() {
         await this.fetchAllBooks();
         this.fetchSearchResults();
+        this.filterByGenre();
     }
 };
+
 </script>
 
 <style scoped>
