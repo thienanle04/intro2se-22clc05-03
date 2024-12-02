@@ -6,9 +6,21 @@ class BookController {
   async getAllBooks(req, res) {
     try {
       const books = await Book.find();
+
+      // For each book, get the genre name by using the genreId
+      const booksWithGenreNames = await Promise.all(
+        books.map(async (book) => {
+          const genre = await Genre.findById(book.genre);
+          return {
+            ...book.toObject(),
+            genre: genre ? genre.name : null  // Add genre name instead of genre ID
+          };
+        })
+      );  
+      
       res.status(200).json({
         data: {
-          books,
+          books: booksWithGenreNames,
         },
         message: 'Get all books successfully',
         code: 1
@@ -90,9 +102,19 @@ class BookController {
   async getBookById(req, res) {
     try {
       const book = await Book.findById(req.params.bookId);
+
+      const genreId = book.genre;
+      const genre = await Genre.findById(genreId);
+
+      // Modify the genre in the response object, but not in the database
+      const bookWithGenreName = {
+        ...book.toObject(),
+        genre: genre.name  // Add the genre name in place of the genre ObjectId
+      };
+
       res.status(200).json({
         data: {
-          book,
+          book: bookWithGenreName
         },
         message: 'Get book by bookId successfully',
         code: 1
@@ -116,8 +138,9 @@ class BookController {
       description,
       price,
       stock,
-      image,
     } = req.body;
+
+    
 
     try {
       const bookId = req.params.bookId;
@@ -149,7 +172,9 @@ class BookController {
       if (description) book.description = description;
       if (price) book.price = price;
       if (stock) book.stock = stock;
-      if (image) book.image = image;
+      if(req.file){
+        book.image = req.file.path
+      }
       await book.save();
       res.status(200).json({
         data: {
@@ -182,7 +207,7 @@ class BookController {
       }
       // await book.remove();
       await Book.findByIdAndDelete(bookId);
-      
+
       res.status(200).json({
         data: null,
         message: 'Delete book by bookId successfully',
@@ -210,9 +235,13 @@ class BookController {
           description,
           price,
           stock,
-          image,
           rating,
         } = book;
+
+        if(req.file){
+          book.image = req.file.path;
+        }
+        
 
         const bookFound = await Book.findOne({ title, author });
         if (bookFound) {
@@ -234,7 +263,7 @@ class BookController {
 
         const newBook = new Book({
           title,
-          image,
+          image: book.image,
           author,
           genre: genreFound._id,
           SBN,
@@ -258,6 +287,7 @@ class BookController {
       });
     }
   }
+
   async getBookByGenre(req, res) {
     try {
       const genre = req.params.genre;

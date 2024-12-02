@@ -1,5 +1,5 @@
 <template>
-    <div class="row justify-content-center">
+    <div class="row justify-content-center w-100 my-3">
         <div class="col-10 col-md-8 justify-content-center d-flex">
             <div class="card shadow">
                 <div class="card-body">

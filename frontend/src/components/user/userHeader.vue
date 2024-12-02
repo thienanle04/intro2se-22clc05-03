@@ -1,88 +1,94 @@
 <template>
-    <div class="row full-header">
-        <div class="col-12">
-            <nav class="navbar bg-white border-bottom shadow-sm">
-                <div class="container-fluid" style="position: relative;">
-                    <!-- Top Section -->
-                    <div class="row w-100 align-items-start" style="height: 50px;">
-                        <!-- Left Section: Logo -->
-                        <div class="col-2 d-flex align-items-start">
-                            <RouterLink to="/" class="text-dark d-flex align-items-center"
-                                style="text-decoration: none;">
-                                <span style="font-size: 3rem; line-height: 0.7;">📚</span>
-                                <span style="font-weight: bold; color: #dc3545; margin-left: 0.7rem;">BOOKSHOP</span>
-                            </RouterLink>
-                        </div>
-                        <!-- Center Section: Search Bar -->
-                        <div class="col-8 d-flex justify-content-center">
-                            <form class="d-flex w-75" role="search">
-                                <input class="form-control px-4" type="search"
-                                    placeholder="🔍 Search book titles, authors, publishers..." v-model="searchInput"
-                                    aria-label="Search" />
-                                    <button class="btn btn-outline-success" type="submit" @click="performSearch">Search</button>
-                            </form>
-                        </div>
-
-                        <!-- Right Section: Icons -->
-                        <div class="col-2 d-flex justify-content-end align-items-center">
-                            <RouterLink to="/login" class="text-dark me-3">
-                                <span>Login</span>
-                            </RouterLink>
-                            <span class="text-dark me-3">|</span>
-                            <a href="#" class="text-dark me-3">
-                                <i class="bi bi-cart3 fs-4"></i>
-                            </a>
-                            <span class="text-dark me-3">|</span>
-                            <a href="#" class="text-dark">
-                                <i class="bi bi-person fs-4"></i>
-                            </a>
-                        </div>
-                    </div>
-
-                    <!-- Categories (Responsive) -->
-                    <div class="row w-100 mt-3 categories">
-                        <button class="btn btn-outline-secondary rounded-pill mx-2 mb-2 category-button">
-                            <i class="bi bi-book me-1"></i> Action
-                        </button>
-                        <button class="btn btn-outline-secondary rounded-pill mx-2 mb-2 category-button">
-                            <i class="bi bi-film me-1"></i> Adventure
-                        </button>
-                        <button class="btn btn-outline-secondary rounded-pill mx-2 mb-2 category-button">
-                            <i class="bi bi-emoji-smile me-1"></i> Comedy
-                        </button>
-                        <button class="btn btn-outline-secondary rounded-pill mx-2 mb-2 category-button">
-                            <i class="bi bi-shield-shaded me-1"></i> Crime
-                        </button>
-                        <button class="btn btn-outline-secondary rounded-pill mx-2 mb-2 category-button">
-                            <i class="bi bi-tv me-1"></i> Drama
-                        </button>
-                        <button class="btn btn-outline-secondary rounded-pill mx-2 mb-2 category-button">
-                            <i class="bi bi-lightning me-1"></i> Thriller
-                        </button>
-                        <button class="btn btn-danger rounded-pill mx-2 mb-2 category-button">
-                            View All
-                        </button>
-                    </div>
+    <nav class="navbar mt-2 bg-white border-bottom shadow-sm sticky-top">
+        <div class="container-fluid" style="position: relative;">
+            <!-- Top Section -->
+            <div class="row w-100 align-items-start" style="height: 50px;">
+                <!-- Left Section: Logo -->
+                <div class="col-2 d-flex align-items-start">
+                    <RouterLink to="/" class="text-dark d-flex align-items-center" style="text-decoration: none;">
+                        <span style="font-size: 3rem; line-height: 0.7;">📚</span>
+                        <span style="font-weight: bold; color: #dc3545; margin-left: 0.7rem;">BOOKSHOP</span>
+                    </RouterLink>
                 </div>
-            </nav>
+                <!-- Center Section: Search Bar -->
+                <div class="col-8 d-flex justify-content-center">
+                    <form class="d-flex w-75" role="search">
+                        <input class="form-control px-4" type="search"
+                            placeholder="🔍 Search book titles, authors, publishers..." v-model="searchInput"
+                            aria-label="Search" />
+                        <button class="btn btn-outline-success mx-3" type="submit"
+                            @click="performSearch">Search</button>
+                    </form>
+                </div>
+
+                <!-- Right Section: Icons -->
+                <div class="col-2 d-flex justify-content-end align-items-center">
+                    <RouterLink to="/login" class="text-dark me-3" v-if="!isAuthenticated">
+                        <span>Login</span>
+                    </RouterLink>
+                    <button @click="this.$store.commit('logout')" class="text-dark me-3 no-style" v-if="isAuthenticated">
+                        <span>Log out</span>
+                    </button>
+                    <span class="text-dark me-3">|</span>
+                    <RouterLink to="/cart" class="text-dark me-3">
+                        <i class="bi bi-cart3 fs-4"></i>
+                    </RouterLink>
+                    <span class="text-dark me-3">|</span>
+                    <a href="#" class="text-dark">
+                        <i class="bi bi-person fs-4"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Categories (Responsive) -->
+            <div class="row w-100 justify-content-center categories">
+                <button class="btn btn-outline-secondary rounded-pill mx-2 mb-2 category-button">
+                    <i class="bi bi-book me-1"></i> Action
+                </button>
+                <button class="btn btn-outline-secondary rounded-pill mx-2 mb-2 category-button">
+                    <i class="bi bi-film me-1"></i> Adventure
+                </button>
+                <button class="btn btn-outline-secondary rounded-pill mx-2 mb-2 category-button">
+                    <i class="bi bi-emoji-smile me-1"></i> Comedy
+                </button>
+                <button class="btn btn-outline-secondary rounded-pill mx-2 mb-2 category-button">
+                    <i class="bi bi-shield-shaded me-1"></i> Crime
+                </button>
+                <button class="btn btn-outline-secondary rounded-pill mx-2 mb-2 category-button">
+                    <i class="bi bi-tv me-1"></i> Drama
+                </button>
+                <button class="btn btn-outline-secondary rounded-pill mx-2 mb-2 category-button">
+                    <i class="bi bi-lightning me-1"></i> Thriller
+                </button>
+                <button class="btn btn-danger rounded-pill mx-2 mb-2 category-button">
+                    View All
+                </button>
+            </div>
         </div>
-    </div>
+    </nav>
 </template>
 
 
 <style scoped>
-.full-header {
-    height: 100px;
+.no-style {
+    all: unset;
+    /* Remove all default button styles */
+    display: inline-block;
+    /* Make the button behave like a block-level element */
+    font-size: 1rem;
+    /* Optional: Set the text size like a <p> tag */
+    margin: 0;
+    /* Optional: Reset any margin */
+    padding: 0;
+    /* Optional: Remove padding */
+    cursor: pointer;
+    /* Make it look like a clickable element */
+    text-decoration: underline;
+    /* Remove the underline by default */
 }
 
-.categories {
-    position: absolute;
-    top: 30px;
-    left: 0;
-    width: 100%;
-    z-index: 1;
-    display: flex;
-    justify-content: center;
+.full-header {
+    height: 100px;
 }
 
 /* Hide categories when the screen width is smaller than 768px */
@@ -109,13 +115,17 @@
 </style>
 
 <script>
-import { RouterLink } from 'vue-router';
 export default {
     name: 'userHeader',
     data() {
         return {
             searchInput: '',
         }
+    },
+    computed: {
+        isAuthenticated() {
+            return this.$store.getters.isAuthenticated;
+        },
     },
     methods: {
         performSearch(event) {
