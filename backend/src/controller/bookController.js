@@ -138,8 +138,9 @@ class BookController {
       description,
       price,
       stock,
-      image,
     } = req.body;
+
+    
 
     try {
       const bookId = req.params.bookId;
@@ -171,7 +172,9 @@ class BookController {
       if (description) book.description = description;
       if (price) book.price = price;
       if (stock) book.stock = stock;
-      if (image) book.image = image;
+      if(req.file){
+        book.image = req.file.path
+      }
       await book.save();
       res.status(200).json({
         data: {
@@ -232,9 +235,13 @@ class BookController {
           description,
           price,
           stock,
-          image,
           rating,
         } = book;
+
+        if(req.file){
+          book.image = req.file.path;
+        }
+        
 
         const bookFound = await Book.findOne({ title, author });
         if (bookFound) {
@@ -256,7 +263,7 @@ class BookController {
 
         const newBook = new Book({
           title,
-          image,
+          image: book.image,
           author,
           genre: genreFound._id,
           SBN,
@@ -280,6 +287,7 @@ class BookController {
       });
     }
   }
+
   async getBookByGenre(req, res) {
     try {
       const genre = req.params.genre;
