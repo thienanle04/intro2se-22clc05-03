@@ -35,6 +35,14 @@ router
     userController.deleteUser
   );
 
+// [POST] /api/v1/users
+router
+.route('')
+.post(Authentication.authenticateToken, 
+  Authentication.isAdmin,
+  userController.createNewUser
+);
+
 // [POST] /api/v1/users/{userId}/addCart
 router
   .route('/:userId/addCart')

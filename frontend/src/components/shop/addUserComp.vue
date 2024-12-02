@@ -43,7 +43,7 @@
                 <span>Phone</span>
             </div>
             <div class="col-7">
-                <input type="text" class="form-control" v-model="user.password" placeholder="Password" aria-label="Password">
+                <input type="text" class="form-control" v-model="user.phone" placeholder="Phone" aria-label="Phone">
             </div>
         </div>
 
@@ -76,7 +76,7 @@
 
 <script>
 export default {
-    name: 'addComponent',
+    name: 'addUserComponent',
     data() {
         return {
             user: {
@@ -104,15 +104,14 @@ export default {
         async submit() {
             try {
                 const token = this.getAuthToken(); // Retrieve the authentication token
-                const userData = this.createNewUser(); // Use the book object directly
-
+                const userData = this.createNewUser();
                 const response = await fetch('/api/v1/users', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${token}`,
                     },
-                    body: JSON.stringify(userData), // Send the book data as JSON
+                    body: JSON.stringify(userData),
                 });
 
                 if (!response.ok) {
@@ -141,7 +140,7 @@ export default {
 
         getAuthToken() {
             // Retrieve the token from storage or app state
-            return localStorage.getItem('authToken') || ''; // Replace with actual token retrieval logic
+            return this.$store.getters.getAuthToken  || ''; // Replace with actual token retrieval logic
         },
     },
 };
