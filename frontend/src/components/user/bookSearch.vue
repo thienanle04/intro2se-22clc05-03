@@ -1,12 +1,23 @@
 <template>
     <div class="row my-1 w-100">
         <div class="col-12">
-            <!-- Display Search Result Header with conditional message -->
-            <h3 class="mx-5">{{ searchResults.length > 0 ? 'Search Results:' : 'Search Results: None' }}</h3>
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <!-- Header -->
+                <h3 class="mb-0">{{ filteredResults.length > 0 ? 'Search Results:' : 'Search Results: None' }}</h3>
+
+                <!-- Genre Dropdown and Filter Button -->
+                <div class="d-flex align-items-center">
+                    <select v-model="selectedGenre" class="form-select me-2">
+                        <option value="">All Genres</option>
+                        <option v-for="genre in genres" :key="genre" :value="genre">{{ genre }}</option>
+                    </select>
+                    <button class="btn btn-primary" @click="filterByGenre">Filter</button>
+                </div>
+            </div>
 
             <!-- Display Search Results -->
             <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-6 g-4 mx-5">
-                <div v-for="book in searchResults" :key="book.id" class="col">
+                <div v-for="book in currentPageBooks" :key="book.id" class="col">
                     <div class="card text-center mx-auto" style="width: 200px;">
                         <!-- Image -->
                         <img :src="book.image" class="card-img-top" alt="book.title" @click="goToBookDetails(book._id)"
@@ -27,7 +38,7 @@
                             </div>
                             <!-- Price & Add to Cart -->
                             <div class="card-price text-center text-danger">
-                                <button class="btn"  @click="this.$store.dispatch('addToCart', { book: book });">
+                                <button class="btn" @click="this.$store.dispatch('addToCart', { book: book });">
                                     <i class="bi bi-cart3 fs-4"></i>
                                 </button>
                                 {{ book.price }}$
@@ -81,7 +92,7 @@ export default {
             genres: ['Fantasy', 'Adventure', 'Classic', 'Romance', 'Dystopian', 'ComingOfAge'],
             filteredResults: [],
             currentPage: 1,
-            itemsPerPage: 8,
+            itemsPerPage: 12,
             totalPages: 1
         };
     },
@@ -126,6 +137,26 @@ export default {
             });
 
             this.searchResults = results;
+            this.filteredResults = results; // Initialize filteredResults to show all searchResults
+            this.calculatePagination(); // Calculate pagination on search result change
+        },
+        filterByGenre() {
+            if (this.selectedGenre === '') {
+                this.filteredResults = this.searchResults;
+            } else {
+                this.filteredResults = this.searchResults.filter((book) =>
+                    book.genre?.toLowerCase() === this.selectedGenre.toLowerCase()
+                );
+            }
+            this.calculatePagination(); // Recalculate pagination after filtering
+        },
+        calculatePagination() {
+            this.totalPages = Math.ceil(this.filteredResults.length / this.itemsPerPage);
+            this.changePage(1); // Reset to the first page after filtering or searching
+        },
+        changePage(page) {
+            if (page < 1 || page > this.totalPages) return; // Prevent going out of bounds
+            this.currentPage = page;
         },
         /**
          * Navigates to the Book Details page with the given ID.
@@ -135,13 +166,18 @@ export default {
             this.$router.push({ name: 'BookDetails', params: { id } });
         },
     },
+    computed: {
+        currentPageBooks() {
+            const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+            return this.filteredResults.slice(startIndex, startIndex + this.itemsPerPage);
+        }
+    },
     async created() {
         await this.fetchAllBooks();
         this.fetchSearchResults();
         this.filterByGenre();
     }
 };
-
 </script>
 
 <style scoped>
