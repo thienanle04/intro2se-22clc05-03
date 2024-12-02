@@ -143,7 +143,6 @@ class UserController {
   async addCart(req, res) {
     const userId = req.user.id;
     const { bookName, quantity } = req.body;
-
     try {
       // Tìm sách theo tên
       const book = await Book.findOne({ title: bookName });
