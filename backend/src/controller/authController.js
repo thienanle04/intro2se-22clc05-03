@@ -30,7 +30,8 @@ class AuthController {
             data: token,
             message: 'Login success',
             code: 1,
-            role: user.role
+            role: user.role,
+            userId: user._id
           });
         } else {
           return res.status(401).json({

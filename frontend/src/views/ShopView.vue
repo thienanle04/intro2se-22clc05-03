@@ -4,7 +4,7 @@ import adminHeader from '../components/shop/adminHeader.vue';
 </script>
 
 <template>
-    <div>
+    <div class="container">
         <adminHeader />       
         <routerView />
     </div>

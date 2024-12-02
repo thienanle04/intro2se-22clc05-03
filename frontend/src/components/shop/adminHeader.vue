@@ -50,9 +50,7 @@ export default {
   methods: {
     logout() {
       // Clear token and redirect to login
-      localStorage.removeItem("authToken");
-      localStorage.removeItem("isAuthenticated");
-      localStorage.removeItem('userRole');
+      this.$store.commit("logout");
       this.$router.push("/");
     },
   },

@@ -1,5 +1,5 @@
 <template>
-    <div class="row justify-content-center">
+    <div class="row justify-content-center w-100 my-5">
         <div class="col-10 col-md-8 justify-content-center d-flex">
             <div class="card shadow">
                 <div class="card-body">
@@ -33,8 +33,7 @@
                         <!-- Links -->
                         <div class="text-center mt-3">
                             <span>or </span>
-                            <RouterLink to="/signup" class="text-decoration-none">Create a new account</RouterLink> |
-                            <a href="#" class="text-decoration-none">Forgot Password?</a>
+                            <RouterLink to="/signup" class="text-decoration-none">Create a new account</RouterLink>
                         </div>
                     </form>
                 </div>
@@ -61,12 +60,10 @@ export default {
                     // Redirect to home page
                     $('div#loginError').replaceWith('<div id="loginError"></div>');
                     
-                    localStorage.setItem('authToken', res.data);
-                    localStorage.setItem('isAuthenticated', true);
-                    localStorage.setItem('userRole', res.role);
+                    this.$store.dispatch('login', { authToken: res.data, role: res.role, userId: res.userId });
 
                     if (res.role == 'admin') {
-                        this.$router.push('/shop');
+                        this.$router.push('/shop'); 
                     } else if (res.role == 'customer') {
                         this.$router.push('/');
                     }

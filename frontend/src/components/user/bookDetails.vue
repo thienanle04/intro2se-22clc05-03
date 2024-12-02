@@ -34,7 +34,7 @@
                 <div class="card text-center shadow">
                     <div class="card-body">
                         <h5 class="card-title price">{{ book.price }}$</h5>
-                        <button class="btn btn-danger mt-3">
+                        <button class="btn btn-danger mt-3"  @click="this.$store.dispatch('addToCart', { book: book });">
                             <i class="bi bi-cart3 fs-4"></i>
                             Add to Cart
                         </button>
@@ -140,7 +140,7 @@ export default {
         async fetchBookDetails() {
             const bookId = this.$route.params.id;
             try {
-                const response = await fetch(`http://localhost:8081/api/v1/books/${bookId}`);
+                const response = await fetch(`/api/v1/books/${bookId}`);
                 if (response.ok) {
                     const res = await response.json();
                     console.log("book details:", res);
