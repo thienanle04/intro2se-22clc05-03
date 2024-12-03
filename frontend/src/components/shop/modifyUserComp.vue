@@ -87,6 +87,12 @@
                                         </select>
                                     </div>
 
+                                    <!-- Image Input -->
+                                    <div class="mb-3">
+                                        <label for="userImage" class="form-label">Upload Image</label>
+                                        <input type="file" id="userImage" class="form-control"
+                                            @change="handleFileUpload" accept="image/*">
+                                    </div>
 
                                     <!-- Action Buttons -->
                                     <div class="d-flex justify-content-between">
@@ -102,18 +108,19 @@
                     </div>
                 </li>
                 <nav>
-                <ul class="pagination justify-content-center">
-                    <li class="page-item" :class="{ disabled: currentPage === 1 }">
-                        <button class="page-link" @click="changePage(currentPage - 1)">Previous</button>
-                    </li>
-                    <li class="page-item" v-for="page in totalPages" :key="page" :class="{ active: page === currentPage }">
-                        <button class="page-link" @click="changePage(page)">{{ page }}</button>
-                    </li>
-                    <li class="page-item" :class="{ disabled: currentPage === totalPages }">
-                        <button class="page-link" @click="changePage(currentPage + 1)">Next</button>
-                    </li>
-                </ul>
-            </nav>
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item" :class="{ disabled: currentPage === 1 }">
+                            <button class="page-link" @click="changePage(currentPage - 1)">Previous</button>
+                        </li>
+                        <li class="page-item" v-for="page in totalPages" :key="page"
+                            :class="{ active: page === currentPage }">
+                            <button class="page-link" @click="changePage(page)">{{ page }}</button>
+                        </li>
+                        <li class="page-item" :class="{ disabled: currentPage === totalPages }">
+                            <button class="page-link" @click="changePage(currentPage + 1)">Next</button>
+                        </li>
+                    </ul>
+                </nav>
             </ul>
         </div>
     </div>
@@ -165,13 +172,26 @@ export default {
         },
     },
     methods: {
+        handleFileUpload(event) {
+            const file = event.target.files[0]; // Get the first file from the input
+            if (file) {
+                const reader = new FileReader();
+
+                // Read the file as a Data URL to preview the image or send it to the server
+                reader.onload = () => {
+                    this.modifiedUser.image = reader.result; // Store the base64 string or file URL
+                };
+
+                reader.readAsDataURL(file); // Start reading the file
+            }
+        },
         async getAllUsers() {
             try {
                 const response = await fetch('/api/v1/users', {
                     method: 'GET',
                     headers: {
-                        'Authorization': `Bearer ${this.getAuthToken()}`, 
-                        'Content-Type': 'application/json', 
+                        'Authorization': `Bearer ${this.getAuthToken()}`,
+                        'Content-Type': 'application/json',
                     },
                 });
                 if (!response.ok) {
@@ -200,7 +220,7 @@ export default {
 
                 return matchesName && matchesUsername;
             });
-            this.currentPage = 1; 
+            this.currentPage = 1;
         },
 
         selectUser(user) {
@@ -213,12 +233,13 @@ export default {
                 alert("No user selected for modification.");
                 return;
             }
-
+            console.log('modifiedUser', this.modifiedUser);
             const updatedUser = {
                 name: this.modifiedUser.name,
                 email: this.modifiedUser.email,
                 address: this.modifiedUser.address,
                 role: this.modifiedUser.role,
+                image: this.modifiedUser.image
             };
 
             this.updateUser(updatedUser);
@@ -253,28 +274,35 @@ export default {
                 console.error('Error deleting user:', error);
                 alert('Failed to delete user. Please try again.');
             }
-            alert(`User "${this.selectedUser.username}" has been deleted.`);
         },
         async updateUser(updatedUser) {
+            const formData = new FormData();
+            formData.append('name', updatedUser.name);
+            formData.append('email', updatedUser.email);
+            formData.append('role', updatedUser.role);
+
+            // Add any additional fields if required
+            if (updatedUser.image) {
+                formData.append('image', updatedUser.image); // Add the file object
+            }
+
             try {
                 const response = await fetch(`/api/v1/users/${this.selectedUser._id}/update`, {
                     method: 'PATCH',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${this.getAuthToken()}`,
+                        'Authorization': `Bearer ${this.getAuthToken()}`, // No 'Content-Type', browser sets it automatically for FormData
                     },
-                    body: JSON.stringify(updatedUser),
+                    body: formData, // Use FormData object as the body
                 });
 
                 if (response.ok) {
                     const data = await response.json();
-                    console.log('User updated successfully:', data);
-                    alert(`User "${updatedUser.username}" has been updated.`);
+                    alert('User updated successfully.');
 
                     // Clear fields after update
                     this.selectedUser = null;
                     this.modifiedUser = {};
-                    this.searchUsers(); // Refresh the list of books
+                    this.searchUsers();
                 } else {
                     console.error('Failed to update user:', response.statusText);
                     alert('Failed to update the user. Please try again.');

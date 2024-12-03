@@ -27,7 +27,7 @@ class UserController {
   }
   // [POST] /api/users
   async createNewUser(req, res) {
-    console.log(req.body);
+    console.log('req.body', req.body);
     try {
       const {
         name,
@@ -107,7 +107,7 @@ class UserController {
   // [PATCH] /api/user/update
   async updateMyProfile(req, res) {
     try {
-      const userId = req.user.id; // Lấy ID người dùng từ JWT
+      const userId = req.params.userId;
       const { email, password, name, address, phone } = req.body;
       const img = req.file;
       const user = await User.findById(userId);
@@ -123,7 +123,7 @@ class UserController {
       // Cập nhật các trường thông tin nếu có
       if (name) user.name = name;
       if (email) user.email = email;
-      if (password) user.password = password;
+      if (password) user.password = await bcrypt.hash(password, 10);
       if (phone) user.phone = phone;
       if (img)  {
         const public_id = user.img.split('/').pop().split('.')[0]; // Lấy public_id từ URL cũ
@@ -385,8 +385,8 @@ class UserController {
   // [POST] /api/v1/users/create: create user, only admin can access
   async createUser(req, res){
     try {
-      const { username, password, email, role } = req.body;
-
+      const { username, password, email, role, phone, address } = req.body;
+      console.log(req.body);
       // check if required fields are missing
       if (!username || !password || !email || !role) {
         return res.status(400).json({

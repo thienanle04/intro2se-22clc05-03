@@ -15,7 +15,8 @@ router
 router
   .route('/create')
   .post(Authentication.authenticateToken, 
-    Authentication.isAdmin, userController.createUser
+    Authentication.isAdmin, upload.single('image'), 
+    userController.createUser
   );
 
 // [GET] /api/v1/users/{userId}: get user by userId, only this user or admin can access
@@ -41,14 +42,6 @@ router
     Authentication.isAdmin, 
     userController.deleteUser
   );
-
-// [POST] /api/v1/users
-router
-.route('')
-.post(Authentication.authenticateToken, 
-  Authentication.isAdmin,
-  userController.createNewUser
-);
 
 // [POST] /api/v1/users/{userId}/addCart
 router

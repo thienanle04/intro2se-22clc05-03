@@ -22,8 +22,7 @@ router
 
 router
   .route('/:bookId/update')
-  // .patch(Authentication.authenticateToken, Authentication.isAdmin, bookController.updateBookById);
-  .post(upload.single('image'), bookController.updateBookById);
+  .patch(Authentication.authenticateToken, Authentication.isAdmin, bookController.updateBookById);
 
 router
   .route('/:bookId/delete')
