@@ -11,6 +11,13 @@ router
     Authentication.isAdmin, userController.getAllUsers
   );
 
+// [POST] /api/v1/users/create: create user, only admin can access
+router
+  .route('/create')
+  .post(Authentication.authenticateToken, 
+    Authentication.isAdmin, userController.createUser
+  );
+
 // [GET] /api/v1/users/{userId}: get user by userId, only this user or admin can access
 router
   .route('/:userId')
@@ -35,6 +42,13 @@ router
     userController.deleteUser
   );
 
+router
+  .route('/:userId/cart')
+  .get(Authentication.authenticateToken, 
+    Authentication.reCheckUser, 
+    userController.getCart
+  );
+
 // [POST] /api/v1/users/{userId}/addCart
 router
   .route('/:userId/addCart')
@@ -49,6 +63,13 @@ router
   .post(Authentication.authenticateToken, 
     Authentication.reCheckUser, 
     userController.removeCart
+  );
+
+router
+  .route('/:userId/removeCart/:bookId')
+  .post(Authentication.authenticateToken, 
+    Authentication.reCheckUser,
+    userController.removeCartItem
   );
 
 // [POST] /api/v1/users/{userId}/payment

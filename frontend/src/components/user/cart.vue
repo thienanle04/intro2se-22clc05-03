@@ -30,17 +30,17 @@
                   </div>
                 </td>
                 <td class="text-center">
-                  <i @click="data.incrementQ(item)" class="bi bi-caret-up"></i>
+                  <i @click="this.$store.dispatch('increaseQ', { book: item })" class="bi bi-caret-up"></i>
                   <span class="mx-2">
                     {{ item.quantity }}
                   </span>
-                  <i @click="data.decrementQ(item)" class="bi bi-caret-down"></i>
+                  <i @click="this.$store.dispatch('decreaseQ', { book: item })" class="bi bi-caret-down"></i>
                 </td>
                 <td class="text-center">
                   ${{ item.price }}
                 </td>
                 <td class="text-center">
-                  ${{ item.price * item.quantity }}
+                  ${{ (item.price * item.quantity).toFixed(2) }}
                 </td>
                 <td class="text-center">
                   <i @click="this.$store.dispatch('removeFromCart', { book: item })" class="bi bi-cart-x text-danger"></i>
@@ -50,7 +50,7 @@
                 <th colspan="4"></th>
                 <th colspan="2" class="text-end">
                   Total:
-                  <span class="badge bg-danger rounded-pill">${{ data.reduce((acc, item) => acc += item.price * item.quantity, 0) }}</span>
+                  <span class="badge bg-danger rounded-pill">${{ data.reduce((acc, item) => acc += item.price * item.quantity, 0).toFixed(2) }}</span>
                 </th>
                 <th colSpan="1"></th>
               </tr>
@@ -64,7 +64,8 @@
                   <button class="btn btn-outline-danger rounded-pill mx-2" role="button" style="width: 110px;" @click="this.$store.dispatch('emptyCart')">
                     Empty cart
                   </button>
-                  <button class="btn btn-outline-danger rounded-pill" role="button" style="width: 110px;">Update</button>
+                  <button class="btn btn-outline-danger rounded-pill" role="button" style="width: 110px;"
+                    @click="this.$store.dispatch('updateCart')">Update</button>
                   <router-link to="/cart/checkout" class="btn btn-danger rounded-pill ms-2" style="width: 110px;">Checkout</router-link>
                 </td>
                 <td colspan="1"></td>

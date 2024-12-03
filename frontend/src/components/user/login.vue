@@ -61,6 +61,7 @@ export default {
                     $('div#loginError').replaceWith('<div id="loginError"></div>');
                     
                     this.$store.dispatch('login', { authToken: res.data, role: res.role, userId: res.userId });
+                    this.$store.dispatch('fetchCart');
 
                     if (res.role == 'admin') {
                         this.$router.push('/shop'); 
