@@ -57,8 +57,8 @@ class UserController {
   async updateMyProfile(req, res) {
     try {
       const userId = req.user.id; // Lấy ID người dùng từ JWT
-      const { email, password, name, address, phone } = req.body;
-      const img = req.file;
+      const { email, password, name, address, phone, role } = req.body;
+      const image = req.image;
       const user = await User.findById(userId);
 
       if (!user) {
@@ -74,10 +74,11 @@ class UserController {
       if (email) user.email = email;
       if (password) user.password = password;
       if (phone) user.phone = phone;
-      if (img)  {
-        const public_id = user.img.split('/').pop().split('.')[0]; // Lấy public_id từ URL cũ
+      if (role) user.role = role;
+      if (image)  {
+        const public_id = user.image.split('/').pop().split('.')[0]; // Lấy public_id từ URL cũ
         await cloudinary.uploader.destroy(public_id); // Xóa ảnh cũ khỏi Cloudinary
-        user.img = img.path;
+        user.image = image.path;
       }
 
 
