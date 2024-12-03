@@ -146,7 +146,6 @@
 </style>
 
 <script>
-import axios from '../../axios';
 export default {
     name: "modifyComponent",
     data() {
@@ -173,12 +172,11 @@ export default {
     methods: {
         async getAllBooks() {
             try {
-                const response = await fetch('http://localhost:8081/api/v1/books'); // Perform GET request
+                const response = await fetch('/api/v1/books'); // Perform GET request
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 const data = await response.json(); // Parse JSON response
-                console.log("All books:", data.data.books);
                 return data.data.books; // Return the books array
             } catch (error) {
                 console.error("Failed to fetch books:", error.message);
@@ -195,7 +193,7 @@ export default {
             const allBooks = await this.getAllBooks(); // Use the `getAllBooks` method
 
             this.booksToModify = allBooks.filter(book => {
-                const matchesIsbn = this.isbn ? book._id.includes(this.isbn) : true;
+                const matchesIsbn = this.isbn ? book.SBN.includes(this.isbn) : true;
                 const matchesTitle = this.bookTitle
                     ? book.title.toLowerCase().includes(this.bookTitle.toLowerCase())
                     : true;
@@ -242,7 +240,7 @@ export default {
                     headers: {
                         'Content-Type': 'application/json',
                         // Add any additional headers you need, such as authorization token
-                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+                        'Authorization': `Bearer ${this.getAuthToken()}`,
                     },
                 });
 
@@ -270,7 +268,7 @@ export default {
                     method: 'PATCH',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+                        'Authorization': `Bearer ${this.getAuthToken()}`,
                     },
                     body: JSON.stringify(updatedBook), // Send the updated book data in the request body
                 });
@@ -297,7 +295,7 @@ export default {
         // Method to retrieve the auth token (example)
         getAuthToken() {
             // This should retrieve the token from your app's state or storage
-            return localStorage.getItem('authToken') || ''; // Replace with actual method to get the token
+            return this.$store.getters.getAuthToken  || ''; // Replace with actual method to get the token
         }
     }
 };

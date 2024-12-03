@@ -70,7 +70,7 @@
                 <span>SBN</span>
             </div>
             <div class="col-7">
-                <input type="text" class="form-control" v-model="book.sbn" placeholder="SBN" aria-label="SBN">
+                <input type="text" class="form-control" v-model="book.SBN" placeholder="SBN" aria-label="SBN">
             </div>
         </div>
 
@@ -169,7 +169,7 @@ export default {
 
         getAuthToken() {
             // Retrieve the token from storage or app state
-            return localStorage.getItem('authToken') || ''; // Replace with actual token retrieval logic
+            return this.$store.getters.getAuthToken  || ''; // Replace with actual token retrieval logic
         },
     },
 };

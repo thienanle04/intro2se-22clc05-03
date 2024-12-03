@@ -1,5 +1,5 @@
 <template>
-    <div class="row justify-content-center">
+    <div class="row justify-content-center w-100">
         <div class="col-md-11">
             <div class="position-relative mb-3">
                 <h4 class="text-center mb-0">Top Ratings</h4>
@@ -15,12 +15,11 @@
                             <div class="d-flex justify-content-center">
                                 <!-- Loop through the chunk of 4 items -->
                                 <div v-for="(item, itemIndex) in chunk" :key="`${chunkIndex}-${itemIndex}`"
-                                    class="card mx-4" style="width: 200px; cursor: pointer;"
-                                    @click="goToBookDetails(item._id)">
-                                    <img :src="item.image" :alt="item.title" class="card-img-top"
+                                    class="card mx-4" style="width: 200px; cursor: pointer;">
+                                    <img :src="item.image" :alt="item.title" class="card-img-top"  @click="goToBookDetails(item._id)"
                                         style="height: 250px; object-fit: fill;" />
                                     <div class="card-body d-flex flex-column justify-content-center align-items-center">
-                                        <div class="card-title text-center">
+                                        <div class="card-title text-center"  @click="goToBookDetails(item._id)">
                                             {{ item.title }}
                                         </div>
                                         <div class="card-author text-center mb-2" style="font-size: 14px;">
@@ -30,9 +29,9 @@
                                             {{ item.rating }}⭐
                                         </div>
                                         <div class="card-price text-center text-danger">
-                                            <a href="#" class="text-dark me-3">
+                                            <button @click="this.$store.dispatch('addToCart', { book: item });" class="btn" role="button">
                                                 <i class="bi bi-cart3 fs-4"></i>
-                                            </a>
+                                            </button>
                                             {{ item.price }}$
                                         </div>
                                     </div>
@@ -42,12 +41,12 @@
                     </div>
 
                     <!-- Carousel controls -->
-                    <button class="carousel-control-prev" type="button" data-bs-target="#topRatingCarousel"
+                    <button class="carousel-control-prev w-auto" type="button" data-bs-target="#topRatingCarousel"
                         data-bs-slide="prev">
                         <span class="carousel-control-prev-icon" aria-hidden="true"></span>
                         <span class="visually-hidden">Previous</span>
                     </button>
-                    <button class="carousel-control-next" type="button" data-bs-target="#topRatingCarousel"
+                    <button class="carousel-control-next w-auto" type="button" data-bs-target="#topRatingCarousel"
                         data-bs-slide="next">
                         <span class="carousel-control-next-icon" aria-hidden="true"></span>
                         <span class="visually-hidden">Next</span>
@@ -61,6 +60,7 @@
 <script>
 export default {
     name: 'userTopRating',
+    inject: ['books'],
     data() {
         return {
             topRating: {} // Initialize as an object to hold data, not an array
@@ -88,33 +88,9 @@ export default {
         goToBookDetails(id) {
             this.$router.push({ name: 'BookDetails', params: { id } });
         },
-        
-        /**
-         * Fetches all books data from the API.
-         */
-        async fetchBooks() {
-            try {
-                const response = await fetch('http://localhost:8081/api/v1/books');
-
-                if (response.ok) {
-                    const res = await response.json();
-                    // Sort books by rating in descending order and select the top 20
-                    const topRatedBooks = res.data.books
-                        .sort((a, b) => b.rating - a.rating)
-                        .slice(0, 20);
-
-                    this.topRating = { data: { books: topRatedBooks } };
-                    console.log('Top 20 books by rating:', this.topRating);
-                } else {
-                    console.error('Error:', response.status, response.statusText);
-                }
-            } catch (error) {
-                console.error('Error fetching books data:', error.message);
-            }
-        }
     },
     mounted() {
-        this.fetchBooks(); // Fetch all books on component mount
+        this.topRating = { data: { books: this.books.sort((a, b) => b.rating - a.rating).slice(0, 20) } };
     }
 };
 </script>

@@ -6,9 +6,21 @@ class BookController {
   async getAllBooks(req, res) {
     try {
       const books = await Book.find();
+
+      // For each book, get the genre name by using the genreId
+      const booksWithGenreNames = await Promise.all(
+        books.map(async (book) => {
+          const genre = await Genre.findById(book.genre);
+          return {
+            ...book.toObject(),
+            genre: genre ? genre.name : null  // Add genre name instead of genre ID
+          };
+        })
+      );  
+      
       res.status(200).json({
         data: {
-          books,
+          books: booksWithGenreNames,
         },
         message: 'Get all books successfully',
         code: 1

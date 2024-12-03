@@ -1,10 +1,12 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import store from '../store/store.js';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
       path: '/',
+      name: 'home',
       component: () => import('@/views/UserView.vue'),
       children: [
         {
@@ -35,6 +37,18 @@ const router = createRouter({
           component: () => import('@/components/user/bookSearch.vue'),
           props: (route) => ({ searchText: route.query.q }), // Pass search text as a prop
         },
+        {
+          path: '/cart',
+          name: 'Cart',
+          component: () => import('@/components/user/cart.vue'),
+          children: [
+            {
+              path: '/checkout',
+              name: 'Checkout',
+              component: () => import('@/components/user/checkout.vue'),
+            }
+          ],
+        },
       ],
     },
     {
@@ -63,8 +77,8 @@ const router = createRouter({
 
 
 router.beforeEach((to, from, next) => {
-  const isAuthenticated = !!localStorage.getItem('authToken');
-  const userRole = localStorage.getItem('userRole');
+  const isAuthenticated = store.getters.isAuthenticated;  
+  const userRole = store.getters.getRole; 
 
   if (to.meta.preventAuthenticated && isAuthenticated) {
     alert('You are already logged in');
