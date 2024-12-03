@@ -3,12 +3,9 @@ import Swal from 'sweetalert2';
 
 export default createStore({
   state: {
-    isAuthenticated: true,
-    authToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3M2EyZGNjNGI5ODEwNTg1MWFkNDI2NyIsInVzZXJuYW1lIjoidGhpZW5hbmxlMDQiLCJyb2xlIjoiY3VzdG9tZXIiLCJpYXQiOjE3MzMxOTExMjgsImV4cCI6MTczMzI3NzUyOH0.l5FoHkuBYP54YHvtGcTIN-7ZeeWC3l44Ox63Rv3kpZI',
-    userId: '673a2dcc4b98105851ad4267',
-    // isAuthenticated: false,
-    // authToken: null,
-    // userId: null,
+    isAuthenticated: false,
+    authToken: null,
+    userId: null,
     role: null,
     cartItems: [],
   },
@@ -129,20 +126,24 @@ export default createStore({
         if (result.isConfirmed) {
           // Empty the cart
           state.cartItems = [];
-          const res = await fetch(`/api/v1/users/${state.userId}/removeCart`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${state.authToken}`,
-            },
-          });
-          if (res.ok) {
-            swalWithBootstrapButtons.fire({
-              title: "Emptied!",
-              text: "Your cart is now empty",
-              icon: "success"
+          if (state.isAuthenticated) {
+            const res = await fetch(`/api/v1/users/${state.userId}/removeCart`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${state.authToken}`,
+              },
             });
+
+            if (!res.ok) {
+              throw new Error('Failed to empty cart');
+            }
           }
+          swalWithBootstrapButtons.fire({
+            title: "Emptied!",
+            text: "Your cart is now empty",
+            icon: "success"
+          });
         } else if (
           /* Read more about handling dismissals below */
           result.dismiss === Swal.DismissReason.cancel
@@ -182,7 +183,16 @@ export default createStore({
       }
     },
     async updateCart({ state }) {
-      // Simulate an API call to update the cart
+      if (!state.isAuthenticated) {
+        Swal.fire({
+          title: "Please login first",
+          text: "You need to login to save your shopping progress",
+          icon: "warning",
+        });
+
+        return;
+      }
+
       for (const item of state.cartItems) {
         try {
           // Make a DELETE request to the API to delete the book
