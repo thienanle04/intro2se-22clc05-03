@@ -3,10 +3,13 @@ import Swal from 'sweetalert2';
 
 export default createStore({
   state: {
-    isAuthenticated: false,
-    authToken: null,
+    isAuthenticated: true,
+    authToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3M2EyZGNjNGI5ODEwNTg1MWFkNDI2NyIsInVzZXJuYW1lIjoidGhpZW5hbmxlMDQiLCJyb2xlIjoiY3VzdG9tZXIiLCJpYXQiOjE3MzMxOTExMjgsImV4cCI6MTczMzI3NzUyOH0.l5FoHkuBYP54YHvtGcTIN-7ZeeWC3l44Ox63Rv3kpZI',
+    userId: '673a2dcc4b98105851ad4267',
+    // isAuthenticated: false,
+    // authToken: null,
+    // userId: null,
     role: null,
-    userId: null,
     cartItems: [],
   },
   mutations: {
@@ -32,6 +35,17 @@ export default createStore({
         text: "You have successfully logged out",
         icon: "success"
       });
+    },
+    async fetchCart(state) {
+      // Simulate an API call to fetch the cart items
+      const res = await fetch(`/api/v1/users/${state.userId}/cart`, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${state.authToken}`,
+        },
+      });
+      const data = await res.json();
+      state.cartItems = data.data;
     },
     addToCart(state, { book }) {
       // Check if the book is already in the cart
@@ -111,15 +125,24 @@ export default createStore({
         confirmButtonText: "Yes, remove all items!",
         cancelButtonText: "No, cancel!",
         reverseButtons: true
-      }).then((result) => {
+      }).then(async (result) => {
         if (result.isConfirmed) {
           // Empty the cart
           state.cartItems = [];
-          swalWithBootstrapButtons.fire({
-            title: "Emptied!",
-            text: "Your cart is now empty",
-            icon: "success"
+          const res = await fetch(`/api/v1/users/${state.userId}/removeCart`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${state.authToken}`,
+            },
           });
+          if (res.ok) {
+            swalWithBootstrapButtons.fire({
+              title: "Emptied!",
+              text: "Your cart is now empty",
+              icon: "success"
+            });
+          }
         } else if (
           /* Read more about handling dismissals below */
           result.dismiss === Swal.DismissReason.cancel
@@ -176,17 +199,20 @@ export default createStore({
           if (!response.ok) {
             throw new Error('Failed to update cart');
           }
-          else {
-            Swal.fire({
-              title: "Updated!",
-              text: "Your cart has been updated",
-              icon: "success"
-            });
-          }
         } catch (error) {
           console.error(error);
         }
       };
+      Swal.fire({
+        title: "Updated!",
+        text: "Your cart has been updated",
+        icon: "success",
+        showConfirmButton: false,
+        timer: 1000,
+      });
+    },
+    fetchCart({ commit }) {
+      commit('fetchCart');
     }
   },
   getters: {
