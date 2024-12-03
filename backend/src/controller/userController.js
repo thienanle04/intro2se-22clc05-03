@@ -3,13 +3,12 @@ const Cart = require("../models/Cart");
 const CartItem = require("../models/CartItem");
 const Book = require("../models/Books");
 const Order = require("../models/Order");
-
-const bcrypt = require('bcryptjs');
+const Genre = require('../models/Genre');
 
 // req.user = { userId, username, role }
 class UserController {
-  // [GET] /api/user
-  async getAllUsers(req, res) {
+   // [GET] /api/user
+   async getAllUsers(req, res) {
     try {
       const userData = await User.find();
       res.status(200).json({
@@ -125,10 +124,11 @@ class UserController {
       if (email) user.email = email;
       if (password) user.password = await bcrypt.hash(password, 10);
       if (phone) user.phone = phone;
-      if (img)  {
-        const public_id = user.img.split('/').pop().split('.')[0]; // Lấy public_id từ URL cũ
+      if (role) user.role = role;
+      if (image)  {
+        const public_id = user.image.split('/').pop().split('.')[0]; // Lấy public_id từ URL cũ
         await cloudinary.uploader.destroy(public_id); // Xóa ảnh cũ khỏi Cloudinary
-        user.img = img.path;
+        user.image = image.path;
       }
 
 
@@ -190,6 +190,55 @@ class UserController {
     }
   }
 
+  // [POST] /api/v1/users/create: create user, only admin can access
+  async createUser(req, res){
+    try {
+      const { username, password, email, role } = req.body;
+
+      // check if required fields are missing
+      if (!username || !password || !email || !role) {
+        return res.status(400).json({
+          data: null,
+          message: 'Missing required fields',
+          code: 0
+        });
+      }
+
+      // check if role is valid
+      if (role !== 'admin' && role !== 'user') {
+        return res.status(400).json({
+          data: null,
+          message: 'Invalid role',
+          code: 0
+        });
+      }
+
+      // check if user already exists
+      const existingUser = await User.findOne({ username });
+      if (existingUser) {
+        return res.status(400).json({
+          data: null,
+          message: 'User already exists',
+          code: 0
+        });
+      }
+
+      const newUser = new User({ username, password, email, role });
+      await newUser.save();
+      res.status(200).json({
+        data: newUser,
+        message: 'User created successfully',
+        code: 1
+      });
+    } catch (error) {
+      res.status(500).json({
+        data: null,
+        message: `Error creating user: ${error.message}`,
+        code: 0
+      });
+    }
+  }
+
   // [POST] /api/user/:userId/addCart
   async addCart(req, res) {
     const userId = req.user.id;
@@ -239,7 +288,7 @@ class UserController {
       let cartItem = await CartItem.findOne({ book: book._id });
       if (cartItem) {
         // Nếu sản phẩm đã có trong giỏ, tăng số lượng
-        cartItem.quantity += quantity;
+        cartItem.quantity = quantity;
         await cartItem.save();
       } else {
         // Nếu sản phẩm chưa có trong giỏ, thêm mới
@@ -274,7 +323,7 @@ class UserController {
   // [POST] /api/user/:userId/removeCart
   async removeCart(req, res) {
     const userId = req.user.id;
-    
+
     try {
       let user = await User.findById(userId).populate('cart');
       if (!user) {
@@ -313,10 +362,138 @@ class UserController {
         code: 0
       });
     }
-    
+
   }
 
-  // [POST] /api/user/:userId/payment
+  // [POST] /api/user/:userId/removeCart/:bookId
+  async removeCartItem(req, res) {
+    const userId = req.user.id;
+    const { bookId } = req.params; // Get bookId from URL params
+
+    try {
+      // Find user and populate their cart
+      let user = await User.findById(userId).populate('cart');
+      if (!user) {
+        return res.status(404).json({
+          data: null,
+          message: 'User not found',
+          code: 0
+        });
+      }
+
+      // Check if the user has a cart
+      if (!user.cart) {
+        return res.status(404).json({
+          data: null,
+          message: 'Cart not found',
+          code: 0
+        });
+      }
+
+      // Find the item(s) to delete based on bookId
+      const itemIndex = user.cart.items.findIndex(item => item.book.toString() === bookId);
+
+      // If the item is not in the cart
+      if (itemIndex === -1) {
+        return res.status(404).json({
+          data: null,
+          message: 'Book not found in cart',
+          code: 0
+        });
+      }
+
+      // Remove the item from the cart
+      const itemToRemove = user.cart.items[itemIndex];
+      await CartItem.findByIdAndDelete(itemToRemove._id); // Delete CartItem
+      user.cart.items.splice(itemIndex, 1); // Remove the item from the cart array
+
+      // Save the updated cart
+      await user.cart.save();
+
+      // Return success response
+      res.status(200).json({
+        data: null,
+        message: 'Book removed from cart successfully',
+        code: 1
+      });
+
+    } catch (error) {
+      res.status(500).json({
+        data: null,
+        message: `Error deleting item from cart: ${error.message}`,
+        code: 0
+      });
+    }
+  }
+
+  // [GET] /api/user/:userId/getCart
+  async getCart(req, res) {
+    const userId = req.user.id;  // Assuming `req.user.id` holds the authenticated user's ID
+    try {
+      res.setHeader('Cache-Control', 'no-store'); // Prevent caching
+
+      // Find user and populate their cart
+      let user = await User.findById(userId).populate('cart');  // Ensure the cart is populated
+      if (!user) {
+        return res.status(404).json({
+          data: null,
+          message: 'User not found',
+          code: 0
+        });
+      }
+
+      // Check if the user has a cart
+      if (!user.cart) {
+        const newCart = new Cart({
+          user: userId,
+          items: []
+        });
+        await newCart.save();
+        user.cart = newCart._id;
+        await user.save();
+      }
+      // Fetch books and their quantities from the cart
+      const cartItemsWithDetails = [];
+
+      for (let item of user.cart.items) {
+        const cartItem = await CartItem.findById(item._id);
+        const book = await Book.findById(cartItem.book); // Assuming each cart item has a `bookId` reference
+
+        if (book) {
+          const genreId = book.genre;
+          const genre = await Genre.findById(genreId);
+
+          // Modify the genre in the response object, but not in the database
+          const bookWithGenreName = {
+            ...book.toObject(),
+            genre: genre.name  // Add the genre name in place of the genre ObjectId
+          };
+
+          cartItemsWithDetails.push({
+            ...bookWithGenreName,
+            quantity: cartItem.quantity // Add the quantity of that book in the cart
+          });
+        } else {
+          console.log('Book not found for cart item:', item.bookId);
+        }
+      }
+
+      // Return the entire cart, including items
+      res.status(200).json({
+        data: cartItemsWithDetails,
+        message: 'Cart fetched successfully',
+        code: 1
+      });
+
+    } catch (error) {
+      res.status(500).json({
+        data: null,
+        message: `Error fetching cart: ${error.message}`,
+        code: 0
+      });
+    }
+  }
+
   async payment(req, res) {
     // const userId = req.user.id;
     const userId = req.params.userId;
@@ -379,7 +556,7 @@ class UserController {
         code: 0
       });
     }
-  
+
   }
 
   // [POST] /api/v1/users/create: create user, only admin can access

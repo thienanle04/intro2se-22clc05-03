@@ -5,8 +5,8 @@ export default createStore({
   state: {
     isAuthenticated: false,
     authToken: null,
-    role: null,
     userId: null,
+    role: null,
     cartItems: [],
   },
   mutations: {
@@ -32,6 +32,17 @@ export default createStore({
         text: "You have successfully logged out",
         icon: "success"
       });
+    },
+    async fetchCart(state) {
+      // Simulate an API call to fetch the cart items
+      const res = await fetch(`/api/v1/users/${state.userId}/cart`, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${state.authToken}`,
+        },
+      });
+      const data = await res.json();
+      state.cartItems = data.data;
     },
     addToCart(state, { book }) {
       // Check if the book is already in the cart
@@ -111,10 +122,23 @@ export default createStore({
         confirmButtonText: "Yes, remove all items!",
         cancelButtonText: "No, cancel!",
         reverseButtons: true
-      }).then((result) => {
+      }).then(async (result) => {
         if (result.isConfirmed) {
           // Empty the cart
           state.cartItems = [];
+          if (state.isAuthenticated) {
+            const res = await fetch(`/api/v1/users/${state.userId}/removeCart`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${state.authToken}`,
+              },
+            });
+
+            if (!res.ok) {
+              throw new Error('Failed to empty cart');
+            }
+          }
           swalWithBootstrapButtons.fire({
             title: "Emptied!",
             text: "Your cart is now empty",
@@ -159,7 +183,16 @@ export default createStore({
       }
     },
     async updateCart({ state }) {
-      // Simulate an API call to update the cart
+      if (!state.isAuthenticated) {
+        Swal.fire({
+          title: "Please login first",
+          text: "You need to login to save your shopping progress",
+          icon: "warning",
+        });
+
+        return;
+      }
+
       for (const item of state.cartItems) {
         try {
           // Make a DELETE request to the API to delete the book
@@ -176,17 +209,20 @@ export default createStore({
           if (!response.ok) {
             throw new Error('Failed to update cart');
           }
-          else {
-            Swal.fire({
-              title: "Updated!",
-              text: "Your cart has been updated",
-              icon: "success"
-            });
-          }
         } catch (error) {
           console.error(error);
         }
       };
+      Swal.fire({
+        title: "Updated!",
+        text: "Your cart has been updated",
+        icon: "success",
+        showConfirmButton: false,
+        timer: 1000,
+      });
+    },
+    fetchCart({ commit }) {
+      commit('fetchCart');
     }
   },
   getters: {

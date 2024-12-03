@@ -24,19 +24,22 @@ export default defineComponent({
             books: null
         };
     },
-    async mounted() {
-        try {
-            const response = await fetch ('/api/v1/books');
-            
-            if (response.ok) {
-                const res = await response.json();
-                this.books = res.data.books;  // Update the books
-            } else {
-                console.error('Error:', response.status, response.statusText);
+    mounted() {
+        (async () => {
+            try {
+                const response = await fetch ('/api/v1/books');
+                console.log(response);
+                
+                if (response.ok) {
+                    const res = await response.json();
+                    this.books = res.data.books;  // Update the books
+                } else {
+                    console.error('Error:', response.status, response.statusText);
+                }
+            } catch (error) {
+                console.error('Error fetching books data:', error.message);
             }
-        } catch (error) {
-            console.error('Error fetching books data:', error.message);
-        }
+        })();
     },
     provide() {
         return {

@@ -49,6 +49,11 @@ const router = createRouter({
             }
           ],
         },
+        {
+          path: 'genre/:genre',
+          name: 'GenreBooks',
+          component: () => import('@/components/user/genreBook.vue'),
+        },
       ],
     },
     {
