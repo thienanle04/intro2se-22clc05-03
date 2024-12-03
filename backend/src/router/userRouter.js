@@ -11,6 +11,13 @@ router
     Authentication.isAdmin, userController.getAllUsers
   );
 
+// [POST] /api/v1/users/create: create user, only admin can access
+router
+  .route('/create')
+  .post(Authentication.authenticateToken, 
+    Authentication.isAdmin, userController.createUser
+  );
+
 // [GET] /api/v1/users/{userId}: get user by userId, only this user or admin can access
 router
   .route('/:userId')

@@ -194,7 +194,6 @@ class UserController {
   async addCart(req, res) {
     const userId = req.user.id;
     const { bookName, quantity } = req.body;
-
     try {
       // Tìm sách theo tên
       const book = await Book.findOne({ title: bookName });
@@ -316,6 +315,8 @@ class UserController {
     }
     
   }
+
+  // [POST] /api/user/:userId/payment
   async payment(req, res) {
     // const userId = req.user.id;
     const userId = req.params.userId;
@@ -379,6 +380,55 @@ class UserController {
       });
     }
   
+  }
+
+  // [POST] /api/v1/users/create: create user, only admin can access
+  async createUser(req, res){
+    try {
+      const { username, password, email, role } = req.body;
+
+      // check if required fields are missing
+      if (!username || !password || !email || !role) {
+        return res.status(400).json({
+          data: null,
+          message: 'Missing required fields',
+          code: 0
+        });
+      }
+
+      // check if role is valid
+      if (role !== 'admin' && role !== 'user') {
+        return res.status(400).json({
+          data: null,
+          message: 'Invalid role',
+          code: 0
+        });
+      }
+
+      // check if user already exists
+      const existingUser = await User.findOne({ username });
+      if (existingUser) {
+        return res.status(400).json({
+          data: null,
+          message: 'User already exists',
+          code: 0
+        });
+      }
+
+      const newUser = new User({ username, password, email, role });
+      await newUser.save();
+      res.status(200).json({
+        data: newUser,
+        message: 'User created successfully',
+        code: 1
+      });
+    } catch (error) {
+      res.status(500).json({
+        data: null,
+        message: `Error creating user: ${error.message}`,
+        code: 0
+      });
+    }
   }
 
 }

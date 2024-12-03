@@ -149,6 +149,44 @@ export default createStore({
     },
     emptyCart({ commit }) {
       commit('emptyCart');
+    },
+    increaseQ({ commit }, { book }) {
+      book.quantity += 1;
+    },
+    decreaseQ({ commit }, { book }) {
+      if (book.quantity > 1) {
+        book.quantity -= 1;
+      }
+    },
+    async updateCart({ state }) {
+      // Simulate an API call to update the cart
+      for (const item of state.cartItems) {
+        try {
+          // Make a DELETE request to the API to delete the book
+          const response = await fetch(`/api/v1/users/${state.userId}/addCart`, {
+            method: 'POST', // Specify the method as DELETE
+            headers: {
+              'Content-Type': 'application/json',
+              // Add any additional headers you need, such as authorization token
+              'Authorization': `Bearer ${state.authToken}`,
+            },
+            body: JSON.stringify({ bookName: item.title, quantity: item.quantity }),
+          });
+
+          if (!response.ok) {
+            throw new Error('Failed to update cart');
+          }
+          else {
+            Swal.fire({
+              title: "Updated!",
+              text: "Your cart has been updated",
+              icon: "success"
+            });
+          }
+        } catch (error) {
+          console.error(error);
+        }
+      };
     }
   },
   getters: {

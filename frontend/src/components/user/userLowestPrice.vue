@@ -41,12 +41,12 @@
                     </div>
 
                     <!-- Carousel controls -->
-                    <button class="carousel-control-prev" type="button" data-bs-target="#lowestPriceCarousel"
+                    <button class="carousel-control-prev w-auto" type="button" data-bs-target="#lowestPriceCarousel"
                         data-bs-slide="prev">
                         <span class="carousel-control-prev-icon" aria-hidden="true"></span>
                         <span class="visually-hidden">Previous</span>
                     </button>
-                    <button class="carousel-control-next" type="button" data-bs-target="#lowestPriceCarousel"
+                    <button class="carousel-control-next w-auto" type="button" data-bs-target="#lowestPriceCarousel"
                         data-bs-slide="next">
                         <span class="carousel-control-next-icon" aria-hidden="true"></span>
                         <span class="visually-hidden">Next</span>
