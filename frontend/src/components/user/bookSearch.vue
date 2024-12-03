@@ -1,7 +1,7 @@
 <template>
     <div class="row my-1 w-100">
         <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-4 mx-5">
                 <!-- Header -->
                 <h3 class="mb-0">{{ filteredResults.length > 0 ? 'Search Results:' : 'Search Results: None' }}</h3>
 
@@ -16,13 +16,13 @@
             </div>
 
             <!-- Display Search Results -->
-            <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-6 g-4 mx-5">
+            <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 g-4 mx-5">
                 <div v-for="book in currentPageBooks" :key="book.id" class="col">
-                    <div class="card text-center mx-auto" style="width: 200px;">
+                    <div class="card text-center" style="width: 200px;">
                         <!-- Image -->
                         <img :src="book.image" class="card-img-top" alt="book.title" @click="goToBookDetails(book._id)"
                             style="height: 270px; width: 200px;object-fit: fill;" />
-                        <div class="card-body" style="min-width: 200px;">
+                        <div class="card-body" style="width: 200px;">
                             <!-- Title -->
                             <h5 class="card-title" @click="goToBookDetails(book._id)"
                                 style="font-size: 16px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
