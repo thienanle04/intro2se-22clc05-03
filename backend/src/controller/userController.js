@@ -316,24 +316,16 @@ class UserController {
 
   }
 
-  // [POST] /api/user/:userId/removeCart/:bookId
+  // [DELETE] /api/cart/item/remove/:bookId
   async removeCartItem(req, res) {
-    const userId = req.user.id;
-    const { bookId } = req.params; // Get bookId from URL params
-
     try {
-      // Find user and populate their cart
-      let user = await User.findById(userId).populate('cart');
-      if (!user) {
-        return res.status(404).json({
-          data: null,
-          message: 'User not found',
-          code: 0
-        });
-      }
+      const bookId = req.params.bookId; // Get the bookId from the URL
+      const userId = req.user.userId; // Get the userId from the authenticated user (req.user)
 
-      // Check if the user has a cart
-      if (!user.cart) {
+      // Find the cart for the user
+      const cart = await Cart.findOne({ userId });
+
+      if (!cart) {
         return res.status(404).json({
           data: null,
           message: 'Cart not found',
@@ -341,37 +333,26 @@ class UserController {
         });
       }
 
-      // Find the item(s) to delete based on bookId
-      const itemIndex = user.cart.items.findIndex(item => item.book.toString() === bookId);
-
-      // If the item is not in the cart
-      if (itemIndex === -1) {
-        return res.status(404).json({
-          data: null,
-          message: 'Book not found in cart',
-          code: 0
-        });
+      for (let item of cart.items) {
+        const cartItem = await CartItem.findById(item._id);
+        if (cartItem.book.toString() === bookId) {
+          // Remove the item from the cart
+          cart.items.pull(item);
+          await cart.save();
+          await CartItem.findByIdAndDelete(item._id);
+          return res.status(200).json({
+            data: null,
+            message: 'Cart item removed successfully',
+            code: 1
+          });
+        }
       }
 
-      // Remove the item from the cart
-      const itemToRemove = user.cart.items[itemIndex];
-      await CartItem.findByIdAndDelete(itemToRemove._id); // Delete CartItem
-      user.cart.items.splice(itemIndex, 1); // Remove the item from the cart array
-
-      // Save the updated cart
-      await user.cart.save();
-
-      // Return success response
-      res.status(200).json({
-        data: null,
-        message: 'Book removed from cart successfully',
-        code: 1
-      });
-
-    } catch (error) {
+    }
+    catch (error) {
       res.status(500).json({
         data: null,
-        message: `Error deleting item from cart: ${error.message}`,
+        message: `Error removing cart item: ${error.message}`,
         code: 0
       });
     }
@@ -400,7 +381,7 @@ class UserController {
           items: []
         });
         await newCart.save();
-        user.cart = newCart._id;
+        user.cart = newCart;
         await user.save();
       }
       // Fetch books and their quantities from the cart
