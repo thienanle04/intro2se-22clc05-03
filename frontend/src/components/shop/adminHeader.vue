@@ -17,10 +17,10 @@
         <div class="collapse navbar-collapse" id="navbarNav">
           <ul class="navbar-nav me-auto">
             <li class="nav-item">
-              <RouterLink to="/shop/users" class="nav-link">User Management</RouterLink>
+              <RouterLink to="/shop/modifyUser" class="nav-link">User Management</RouterLink>
             </li>
             <li class="nav-item">
-              <RouterLink to="/shop/modify" class="nav-link">Book Management</RouterLink>
+              <RouterLink to="/shop/modifyBook" class="nav-link">Book Management</RouterLink>
             </li>
             <li class="nav-item">
               <RouterLink to="/shop/analytics" class="nav-link">Analytics</RouterLink>

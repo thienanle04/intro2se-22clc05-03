@@ -24,7 +24,56 @@ class UserController {
       });
     }
   }
+  // [POST] /api/users
+  async createNewUser(req, res) {
+    console.log('req.body', req.body);
+    try {
+      const {
+        name,
+        email,
+        username,
+        password,
+        phone, 
+        address,
+        image
+      } = req.body;
 
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      const userFound = await User.findOne({ username, hashedPassword });
+      if (userFound) {
+        res.status(500).json({
+          data: null,
+          message: 'User already exists',
+          code: 0
+        });
+      }
+
+      const user = new User({
+        name: name,
+        email: email,
+        username: username,
+        password: hashedPassword,
+        phone: phone, 
+        address: address,
+        image: image
+      });
+      await user.save();
+      res.status(201).json({
+        data: {
+          user,
+        },
+        message: 'Create new user successfully',
+        code: 1
+      });
+    } catch (error) {
+      res.status(500).json({
+        data: null,
+        message: 'Create new user failed with error: ' + error,
+        code: 0
+      });
+    }
+  }
   // [GET] /api/user/:userId
   async getUserById(req, res) {
     try {
@@ -57,9 +106,9 @@ class UserController {
   // [PATCH] /api/user/update
   async updateMyProfile(req, res) {
     try {
-      const userId = req.user.id; // Lấy ID người dùng từ JWT
-      const { email, password, name, address, phone, role } = req.body;
-      const image = req.image;
+      const userId = req.params.userId;
+      const { email, password, name, address, phone } = req.body;
+      const img = req.file;
       const user = await User.findById(userId);
 
       if (!user) {
@@ -73,7 +122,7 @@ class UserController {
       // Cập nhật các trường thông tin nếu có
       if (name) user.name = name;
       if (email) user.email = email;
-      if (password) user.password = password;
+      if (password) user.password = await bcrypt.hash(password, 10);
       if (phone) user.phone = phone;
       if (role) user.role = role;
       if (image)  {
@@ -489,6 +538,55 @@ class UserController {
       });
     }
 
+  }
+
+  // [POST] /api/v1/users/create: create user, only admin can access
+  async createUser(req, res){
+    try {
+      const { username, password, email, role, phone, address } = req.body;
+      console.log(req.body);
+      // check if required fields are missing
+      if (!username || !password || !email || !role) {
+        return res.status(400).json({
+          data: null,
+          message: 'Missing required fields',
+          code: 0
+        });
+      }
+
+      // check if role is valid
+      if (role !== 'admin' && role !== 'user') {
+        return res.status(400).json({
+          data: null,
+          message: 'Invalid role',
+          code: 0
+        });
+      }
+
+      // check if user already exists
+      const existingUser = await User.findOne({ username });
+      if (existingUser) {
+        return res.status(400).json({
+          data: null,
+          message: 'User already exists',
+          code: 0
+        });
+      }
+
+      const newUser = new User({ username, password, email, role });
+      await newUser.save();
+      res.status(200).json({
+        data: newUser,
+        message: 'User created successfully',
+        code: 1
+      });
+    } catch (error) {
+      res.status(500).json({
+        data: null,
+        message: `Error creating user: ${error.message}`,
+        code: 0
+      });
+    }
   }
 
 }
