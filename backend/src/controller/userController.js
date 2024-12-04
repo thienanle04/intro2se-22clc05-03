@@ -32,6 +32,7 @@ class UserController {
   async createNewUser(req, res) {
     console.log('req.body', req.body);
     try {
+      const image = req.file;
       const {
         name,
         email,
@@ -39,7 +40,6 @@ class UserController {
         password,
         phone, 
         address,
-        image
       } = req.body;
 
       const hashedPassword = await bcrypt.hash(password, 10);
@@ -52,7 +52,6 @@ class UserController {
           code: 0
         });
       }
-
       const user = new User({
         name: name,
         email: email,
@@ -62,6 +61,25 @@ class UserController {
         address: address,
         image: image
       });
+      if (image) {
+        // Lấy public_id từ URL ảnh cũ
+        const public_id = user.image.split('/').pop().split('.')[0]; // Lấy public_id từ URL cũ
+        console.log(public_id)
+        // Xóa ảnh cũ khỏi Cloudinary nếu có
+        const result = await cloudinary.uploader.destroy(public_id);
+        if (result.result === 'ok') {
+          console.log('Delete success');
+        } else {
+          console.log('Delete failed');
+        }
+  
+        // Cập nhật ảnh mới
+        user.image = image.path; // Lưu đường dẫn ảnh mới (hoặc URL nếu bạn muốn lưu URL)
+      }
+  
+      // Xử lý địa chỉ nếu có
+      if (address) user.address.push(address);
+
       await user.save();
       res.status(201).json({
         data: {
@@ -113,6 +131,7 @@ class UserController {
       const userId = req.params.userId; // Lấy ID từ params
       const { email, password, name, address, phone, role } = req.body;
       const image = req.file; // Ảnh mới nếu có
+      console.log('image', image);
       const user = await User.findById(userId);
   
       if (!user) {
