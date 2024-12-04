@@ -128,7 +128,18 @@ class UserController {
       if (email) user.email = email;
       if (password) user.password = await bcrypt.hash(password, 10);
       if (phone) user.phone = phone;
-      if (role) user.role = role;
+      if (role){
+        if(req.personalRole === 'admin'){
+          user.role = role;
+        }
+        else{
+          return res.status(403).json({
+            data: null,
+            message: 'You are not authorized to access this resource',
+            code: 0
+          });
+        }
+      }
   
       if (image) {
         // Lấy public_id từ URL ảnh cũ
