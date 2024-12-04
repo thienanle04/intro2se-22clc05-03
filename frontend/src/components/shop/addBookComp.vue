@@ -40,15 +40,6 @@
 
         <div class="row d-flex align-items-center mb-3">
             <div class="col-5 text-end">
-                <span>Image URL</span>
-            </div>
-            <div class="col-7">
-                <input type="text" class="form-control" v-model="book.image" placeholder="Image URL" aria-label="Image URL">
-            </div>
-        </div>
-
-        <div class="row d-flex align-items-center mb-3">
-            <div class="col-5 text-end">
                 <span>Stock</span>
             </div>
             <div class="col-7">
@@ -101,7 +92,6 @@ export default {
                 author: "",
                 genre: "",
                 price: 0,
-                image: "", // URL for the book's image
                 stock: 0,
                 description: "",
                 SBN: "",
@@ -114,7 +104,6 @@ export default {
         createNewBook() {
             return {
                 title: this.book.title || "Null", // Replace with dynamic value
-                image: this.book.image || "Null", // Replace with dynamic value
                 author: this.book.author || "Null", // Replace with dynamic value
                 price: this.book.price || 0.0, // Replace with dynamic value
                 stock: this.book.stock || 0, // Replace with dynamic value
@@ -158,7 +147,6 @@ export default {
                 genre: '',
                 price: null,
                 available: false,
-                image: '',
                 stock: 0,
                 description: '',
                 SBN: '',
