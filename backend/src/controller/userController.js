@@ -3,6 +3,8 @@ const Cart = require("../models/Cart");
 const CartItem = require("../models/CartItem");
 const Book = require("../models/Books");
 const Order = require("../models/Order");
+const cloudinary = require('cloudinary').v2; // Đảm bảo import Cloudinary
+const upload = require('../config/cloudinary.config'); // Đảm bảo import cấu hình Cloudinary (nếu bạn sử dụng multer-storage-cloudinary)
 
 // req.user = { userId, username, role }
 class UserController {
@@ -58,46 +60,56 @@ class UserController {
     try {
       const userId = req.user.id; // Lấy ID người dùng từ JWT
       const { email, password, name, address, phone, role } = req.body;
-      const image = req.image;
+      const image = req.file; // Ảnh mới nếu có
       const user = await User.findById(userId);
-
+  
       if (!user) {
         return res.status(404).json({
           data: null,
           message: 'User not found',
-          code: 0
+          code: 0,
         });
       }
-
+  
       // Cập nhật các trường thông tin nếu có
       if (name) user.name = name;
       if (email) user.email = email;
       if (password) user.password = password;
       if (phone) user.phone = phone;
       if (role) user.role = role;
-      if (image)  {
+  
+      if (image) {
+        // Lấy public_id từ URL ảnh cũ
         const public_id = user.image.split('/').pop().split('.')[0]; // Lấy public_id từ URL cũ
-        await cloudinary.uploader.destroy(public_id); // Xóa ảnh cũ khỏi Cloudinary
-        user.image = image.path;
+        // Xóa ảnh cũ khỏi Cloudinary nếu có
+        const result = await cloudinary.uploader.destroy(public_id);
+        if (result.result === 'ok') {
+          console.log('Delete success');
+        } else {
+          console.log('Delete failed');
+        }
+  
+        // Cập nhật ảnh mới
+        user.image = image.path; // Lưu đường dẫn ảnh mới (hoặc URL nếu bạn muốn lưu URL)
       }
-
-
+  
       // Xử lý địa chỉ nếu có
       if (address) user.address.push(address);
-
+  
       // Lưu lại thay đổi
       await user.save();
-
+  
       res.status(200).json({
         data: user,
         message: 'User updated successfully',
-        code: 1
+        code: 1,
       });
     } catch (error) {
+      console.error(error);
       res.status(500).json({
         data: null,
         message: `Error updating user: ${error.message}`,
-        code: 0
+        code: 0,
       });
     }
   }
