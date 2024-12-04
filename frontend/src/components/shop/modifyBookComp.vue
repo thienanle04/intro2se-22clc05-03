@@ -2,7 +2,7 @@
     <div class="card">
         <div class="card-header mb-3 d-flex justify-content-between align-items-center">
             <h3>Modify And Delete Book</h3>
-            <RouterLink to="/shop/add" class="btn btn-primary">
+            <RouterLink to="/shop/addBook" class="btn btn-primary">
                 Add
             </RouterLink>
         </div>
@@ -25,7 +25,7 @@
         </div>
         <div v-if="booksToModify.length > 0">
             <ul class="list-group mb-3">
-                <li class="list-group-item" v-for="book in booksToModify" :key="book._id">
+                <li class="list-group-item" v-for="book in paginatedBooks" :key="book._id">
                     <div class="d-flex align-items-top">
                         <img :src="book.image" alt="Book Image" class="rounded book-image me-3">
                         <div>
@@ -133,6 +133,19 @@
                     </div>
                 </li>
             </ul>
+            <nav>
+                <ul class="pagination justify-content-center">
+                    <li class="page-item" :class="{ disabled: currentPage === 1 }">
+                        <button class="page-link" @click="changePage(currentPage - 1)">Previous</button>
+                    </li>
+                    <li class="page-item" v-for="page in totalPages" :key="page" :class="{ active: currentPage === page }">
+                        <button class="page-link" @click="changePage(page)">{{ page }}</button>
+                    </li>
+                    <li class="page-item" :class="{ disabled: currentPage === totalPages }">
+                        <button class="page-link" @click="changePage(currentPage + 1)">Next</button>
+                    </li>
+                </ul>
+            </nav>
         </div>
     </div>
 </template>
@@ -147,14 +160,16 @@
 
 <script>
 export default {
-    name: "modifyComponent",
+    name: "modifyBookComponent",
     data() {
         return {
             isbn: '', // ISBN to search
             bookTitle: '', // Title to search
             booksToModify: [], // List of books matching the search
             selectedBook: null, // Book selected for modification
-            modifiedBook: {} // Temporary copy of the selected book for editing
+            modifiedBook: {}, // Temporary copy of the selected book for editing
+            currentPage: 1, // Current page
+            itemsPerPage: 5
         };
     },
     watch: {
@@ -167,7 +182,16 @@ export default {
     },
     async created() {
         this.booksToModify = await this.getAllBooks();
-        console.log('book', this.booksToModify);
+    },
+    computed: {
+        totalPages() {
+            return Math.ceil(this.booksToModify.length / this.itemsPerPage);
+        },
+        paginatedBooks() {
+            const start = (this.currentPage - 1) * this.itemsPerPage;
+            const end = start + this.itemsPerPage;
+            return this.booksToModify.slice(start, end);
+        }
     },
     methods: {
         async getAllBooks() {
@@ -248,8 +272,6 @@ export default {
                     throw new Error(`Failed to delete book: ${response.statusText}`);
                 }
 
-                const data = await response.json();
-
                 alert(`Book "${this.selectedBook.Title}" has been deleted.`);
 
                 // Optionally, remove the book from the UI list after deletion
@@ -296,7 +318,11 @@ export default {
         getAuthToken() {
             // This should retrieve the token from your app's state or storage
             return this.$store.getters.getAuthToken  || ''; // Replace with actual method to get the token
-        }
+        },
+        changePage(page) {
+            if (page < 1 || page > this.totalPages) return;
+            this.currentPage = page;
+        },
     }
 };
 </script>
