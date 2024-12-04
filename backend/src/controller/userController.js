@@ -110,7 +110,7 @@ class UserController {
   // [PATCH] /api/user/update
   async updateMyProfile(req, res) {
     try {
-      const userId = req.user.id; // Lấy ID người dùng từ JWT
+      const userId = req.params.userId; // Lấy ID từ params
       const { email, password, name, address, phone, role } = req.body;
       const image = req.file; // Ảnh mới nếu có
       const user = await User.findById(userId);
@@ -133,6 +133,7 @@ class UserController {
       if (image) {
         // Lấy public_id từ URL ảnh cũ
         const public_id = user.image.split('/').pop().split('.')[0]; // Lấy public_id từ URL cũ
+        console.log(public_id)
         // Xóa ảnh cũ khỏi Cloudinary nếu có
         const result = await cloudinary.uploader.destroy(public_id);
         if (result.result === 'ok') {
