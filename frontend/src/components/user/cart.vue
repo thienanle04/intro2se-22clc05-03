@@ -66,7 +66,7 @@
                   </button>
                   <button class="btn btn-outline-danger rounded-pill" role="button" style="width: 110px;"
                     @click="this.$store.dispatch('updateCart')">Update</button>
-                  <router-link to="/cart/checkout" class="btn btn-danger rounded-pill ms-2" style="width: 110px;">Checkout</router-link>
+                  <router-link to="/checkout" class="btn btn-danger rounded-pill ms-2" style="width: 110px;">Checkout</router-link>
                 </td>
                 <td colspan="1"></td>
               </tr>
