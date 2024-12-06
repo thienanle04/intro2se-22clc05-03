@@ -446,70 +446,72 @@ class UserController {
   }
 
   async payment(req, res) {
-    // const userId = req.user.id;
     const userId = req.params.userId;
-    const { name, email, phone, number, street, district, ward, city } = req.body;
+    const { name, email, phone, number, street, district, ward, city, cartItems } = req.body;
+
     try {
-      const user = await User.findById(userId).populate('cart');
-      if (!user) {
-        return res.status(404).json({
-          data: null,
-          message: 'User not found',
-          code: 0
-        });
-      }
-
-      if (!user.cart) {
-        return res.status(404).json({
-          data: null,
-          message: 'Cart not found',
-          code: 0
-        });
-      }
-
-      // Tạo đơn hàng mới
-      const newOrder = new Order({
-        user: userId,
-        items: user.cart.items,
-        details: {
-          name,
-          email,
-          phone,
-          number,
-          street,
-          district,
-          ward,
-          city
+        // Validate the user existence
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({
+                data: null,
+                message: 'User not found',
+                code: 0
+            });
         }
-      });
-      await newOrder.save();
-      user.order.push(newOrder._id);
-      // Xóa giỏ hàng
-      await CartItem.deleteMany({ _id: { $in: user.cart.items } });
-      await Cart.findByIdAndDelete(user.cart);
-      user.cart = null;
-      await user.save();
 
-      // Trả về kết quả thành công
+        // Ensure cart items are present in the request
+        if (!cartItems || cartItems.length === 0) {
+            return res.status(400).json({
+                data: null,
+                message: 'Cart is empty or not provided',
+                code: 0
+            });
+        }
 
-      res.status(200).json({
-        data: newOrder,
-        message: 'Payment successfully',
-        code: 1
-      });
+        // Create a new order with the provided details and cart items
+        const newOrder = new Order({
+            user: userId,
+            items: cartItems, // Directly use cartItems from the request body
+            details: {
+                name,
+                email,
+                phone,
+                number,
+                street,
+                district,
+                ward,
+                city
+            }
+        });
 
+        // Save the new order
+        await newOrder.save();
+        user.order.push(newOrder._id);
+        // Xóa giỏ hàng
+        // await CartItem.deleteMany({ _id: { $in: user.cart.items } });
+        // await Cart.findByIdAndDelete(user.cart);
+        // user.cart = null;
+        // await user.save();
 
+        // // Clear the user's cart after successful order placement
+        // await User.findByIdAndUpdate(userId, { $unset: { cart: "" } });
 
+        res.status(200).json({
+          data: newOrder,
+          message: 'Payment successfully',
+          code: 1
+        });
+    
     } catch (error) {
-      res.status(500).json({
-        data: null,
-        message: `Error payment: ${error.message}`,
-        code: 0
-      });
+        console.error(error);
+        return res.status(500).json({
+            data: null,
+            message: `Error payment: ${error.message}`,
+            code: 0
+        });
     }
-
   }
-
 }
 
 module.exports = new UserController();

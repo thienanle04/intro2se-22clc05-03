@@ -157,6 +157,46 @@ export default createStore({
     }
   },
   actions: {
+    async checkout({ state, dispatch }, checkoutDetails) {
+      try {
+        const response = await fetch(
+          `/api/v1/users/${state.userId}/payment`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${state.authToken}`,
+            },
+            body: JSON.stringify({
+              ...checkoutDetails,
+              cartItems: state.cartItems, // Include cart items from Vuex state
+            }),
+          }
+        );
+
+        const result = await response.json();
+        if (result.code === 1) {
+          Swal.fire({
+            title: "Success",
+            text: result.message,
+            icon: "success",
+          });
+          dispatch("fetchCart"); // Clear cart after successful checkout
+        } else {
+          Swal.fire({
+            title: "Error",
+            text: result.message,
+            icon: "error",
+          });
+        }
+      } catch (error) {
+        Swal.fire({
+          title: "Error",
+          text: `Checkout failed: ${error.message}`,
+          icon: "error",
+        });
+      }
+    },
     login({ commit }, { authToken, role, userId }) {
       // Simulate an API call to authenticate the user
       commit('setAuthentication', { authToken, role, userId });
