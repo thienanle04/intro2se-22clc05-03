@@ -28,6 +28,9 @@
             <li class="nav-item">
               <RouterLink to="/shop/settings" class="nav-link">Settings</RouterLink>
             </li>
+            <li class="nav-item">
+              <RouterLink to="/shop/orderManagement" class="nav-link">Order Management</RouterLink>
+            </li>
           </ul>
 
           <!-- Logout Button -->
