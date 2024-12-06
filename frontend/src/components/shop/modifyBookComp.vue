@@ -2,7 +2,7 @@
     <div class="card">
         <div class="card-header mb-3 d-flex justify-content-between align-items-center">
             <h3>Modify And Delete Book</h3>
-            <RouterLink to="/shop/add" class="btn btn-primary">
+            <RouterLink to="/shop/addBook" class="btn btn-primary">
                 Add
             </RouterLink>
         </div>
@@ -25,7 +25,7 @@
         </div>
         <div v-if="booksToModify.length > 0">
             <ul class="list-group mb-3">
-                <li class="list-group-item" v-for="book in booksToModify" :key="book._id">
+                <li class="list-group-item" v-for="book in paginatedBooks" :key="book._id">
                     <div class="d-flex align-items-top">
                         <img :src="book.image" alt="Book Image" class="rounded book-image me-3">
                         <div>
@@ -85,8 +85,8 @@
                                     <!-- Image URL Input -->
                                     <div class="mb-3">
                                         <label for="bookImage" class="form-label">Image URL</label>
-                                        <input type="url" id="bookImage" class="form-control"
-                                            v-model="modifiedBook.image" placeholder="Enter image URL">
+                                        <input type="file" name="image" id="bookImage" class="form-control"
+                                            @change="handleFileUpload" accept="image/*" placeholder="Enter image URL">
                                     </div>
 
                                     <!-- Description Input -->
@@ -115,8 +115,8 @@
                                     <!-- ISBN Input -->
                                     <div class="mb-3">
                                         <label for="bookISBN" class="form-label">ISBN</label>
-                                        <input type="text" id="bookISBN" class="form-control"
-                                            v-model="modifiedBook.SBN" placeholder="Enter ISBN">
+                                        <input type="text" id="bookISBN" class="form-control" v-model="modifiedBook.SBN"
+                                            placeholder="Enter ISBN">
                                     </div>
 
                                     <!-- Action Buttons -->
@@ -133,6 +133,20 @@
                     </div>
                 </li>
             </ul>
+            <nav>
+                <ul class="pagination justify-content-center">
+                    <li class="page-item" :class="{ disabled: currentPage === 1 }">
+                        <button class="page-link" @click="changePage(currentPage - 1)">Previous</button>
+                    </li>
+                    <li class="page-item" v-for="page in totalPages" :key="page"
+                        :class="{ active: currentPage === page }">
+                        <button class="page-link" @click="changePage(page)">{{ page }}</button>
+                    </li>
+                    <li class="page-item" :class="{ disabled: currentPage === totalPages }">
+                        <button class="page-link" @click="changePage(currentPage + 1)">Next</button>
+                    </li>
+                </ul>
+            </nav>
         </div>
     </div>
 </template>
@@ -147,14 +161,16 @@
 
 <script>
 export default {
-    name: "modifyComponent",
+    name: "modifyBookComponent",
     data() {
         return {
             isbn: '', // ISBN to search
             bookTitle: '', // Title to search
             booksToModify: [], // List of books matching the search
             selectedBook: null, // Book selected for modification
-            modifiedBook: {} // Temporary copy of the selected book for editing
+            modifiedBook: {}, // Temporary copy of the selected book for editing
+            currentPage: 1, // Current page
+            itemsPerPage: 5
         };
     },
     watch: {
@@ -167,9 +183,24 @@ export default {
     },
     async created() {
         this.booksToModify = await this.getAllBooks();
-        console.log('book', this.booksToModify);
+    },
+    computed: {
+        totalPages() {
+            return Math.ceil(this.booksToModify.length / this.itemsPerPage);
+        },
+        paginatedBooks() {
+            const start = (this.currentPage - 1) * this.itemsPerPage;
+            const end = start + this.itemsPerPage;
+            return this.booksToModify.slice(start, end);
+        }
     },
     methods: {
+        handleFileUpload(event) {
+            const file = event.target.files[0]; // Get the first file from the input
+            if (file) {
+                this.modifiedBook.image = file;
+            }
+        },
         async getAllBooks() {
             try {
                 const response = await fetch('/api/v1/books'); // Perform GET request
@@ -219,7 +250,7 @@ export default {
                 genre: this.modifiedBook.genre,
                 image: this.modifiedBook.image,
                 description: this.modifiedBook.description,
-                price: this.price,
+                price: this.modifiedBook.price,
                 rating: this.modifiedBook.rating,
                 SBN: this.modifiedBook.SBN
             };
@@ -248,8 +279,6 @@ export default {
                     throw new Error(`Failed to delete book: ${response.statusText}`);
                 }
 
-                const data = await response.json();
-
                 alert(`Book "${this.selectedBook.Title}" has been deleted.`);
 
                 // Optionally, remove the book from the UI list after deletion
@@ -264,13 +293,25 @@ export default {
         },
         async updateBook(updatedBook, token) {
             try {
+                const formData = new FormData();
+
+                // Thêm các thuộc tính từ `updatedBook` vào formData
+                formData.append('title', updatedBook.title);
+                formData.append('author', updatedBook.author);
+                formData.append('stock', updatedBook.stock);
+                formData.append('genre', updatedBook.genre);
+                formData.append('image', updatedBook.image);
+                formData.append('description', updatedBook.description);
+                formData.append('price', updatedBook.price); // Giá từ `this.price`
+                formData.append('rating', updatedBook.rating);
+                formData.append('SBN', updatedBook.SBN);
+
                 const response = await fetch(`/api/v1/books/${this.selectedBook._id}/update`, {
                     method: 'PATCH',
                     headers: {
-                        'Content-Type': 'application/json',
                         'Authorization': `Bearer ${this.getAuthToken()}`,
                     },
-                    body: JSON.stringify(updatedBook), // Send the updated book data in the request body
+                    body: formData, // Send the updated book data in the request body
                 });
 
                 if (response.ok) {
@@ -295,8 +336,12 @@ export default {
         // Method to retrieve the auth token (example)
         getAuthToken() {
             // This should retrieve the token from your app's state or storage
-            return this.$store.getters.getAuthToken  || ''; // Replace with actual method to get the token
-        }
+            return this.$store.getters.getAuthToken || ''; // Replace with actual method to get the token
+        },
+        changePage(page) {
+            if (page < 1 || page > this.totalPages) return;
+            this.currentPage = page;
+        },
     }
 };
 </script>

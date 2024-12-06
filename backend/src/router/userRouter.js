@@ -15,7 +15,8 @@ router
 router
   .route('/create')
   .post(Authentication.authenticateToken, 
-    Authentication.isAdmin, userController.createUser
+    Authentication.isAdmin, upload.single('image'), 
+    userController.createUser
   );
 
 // [GET] /api/v1/users/{userId}: get user by userId, only this user or admin can access
@@ -30,7 +31,8 @@ router
   .route('/:userId/update')
   .patch(
     Authentication.authenticateToken, 
-    Authentication.reCheckUser,upload.single('image'), 
+    Authentication.reCheckUser,
+    upload.single('image'), 
     userController.updateMyProfile
   );
 

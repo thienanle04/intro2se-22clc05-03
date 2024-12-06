@@ -3,7 +3,11 @@ const Cart = require("../models/Cart");
 const CartItem = require("../models/CartItem");
 const Book = require("../models/Books");
 const Order = require("../models/Order");
+
+const cloudinary = require('cloudinary').v2; // Đảm bảo import Cloudinary
+const upload = require('../config/cloudinary.config'); // Đảm bảo import cấu hình Cloudinary (nếu bạn sử dụng multer-storage-cloudinary)
 const Genre = require('../models/Genre');
+
 
 // req.user = { userId, username, role }
 class UserController {
@@ -24,7 +28,74 @@ class UserController {
       });
     }
   }
+  // [POST] /api/users
+  async createNewUser(req, res) {
+    console.log('req.body', req.body);
+    try {
+      const image = req.file;
+      const {
+        name,
+        email,
+        username,
+        password,
+        phone, 
+        address,
+      } = req.body;
 
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      const userFound = await User.findOne({ username, hashedPassword });
+      if (userFound) {
+        res.status(500).json({
+          data: null,
+          message: 'User already exists',
+          code: 0
+        });
+      }
+      const user = new User({
+        name: name,
+        email: email,
+        username: username,
+        password: hashedPassword,
+        phone: phone, 
+        address: address,
+        image: image
+      });
+      if (image) {
+        // Lấy public_id từ URL ảnh cũ
+        const public_id = user.image.split('/').pop().split('.')[0]; // Lấy public_id từ URL cũ
+        console.log(public_id)
+        // Xóa ảnh cũ khỏi Cloudinary nếu có
+        const result = await cloudinary.uploader.destroy(public_id);
+        if (result.result === 'ok') {
+          console.log('Delete success');
+        } else {
+          console.log('Delete failed');
+        }
+  
+        // Cập nhật ảnh mới
+        user.image = image.path; // Lưu đường dẫn ảnh mới (hoặc URL nếu bạn muốn lưu URL)
+      }
+  
+      // Xử lý địa chỉ nếu có
+      if (address) user.address.push(address);
+
+      await user.save();
+      res.status(201).json({
+        data: {
+          user,
+        },
+        message: 'Create new user successfully',
+        code: 1
+      });
+    } catch (error) {
+      res.status(500).json({
+        data: null,
+        message: 'Create new user failed with error: ' + error,
+        code: 0
+      });
+    }
+  }
   // [GET] /api/user/:userId
   async getUserById(req, res) {
     try {
@@ -57,48 +128,71 @@ class UserController {
   // [PATCH] /api/user/update
   async updateMyProfile(req, res) {
     try {
-      const userId = req.user.id; // Lấy ID người dùng từ JWT
+      const userId = req.params.userId; // Lấy ID từ params
       const { email, password, name, address, phone, role } = req.body;
-      const image = req.image;
+      const image = req.file; // Ảnh mới nếu có
+      console.log('image', image);
       const user = await User.findById(userId);
-
+  
       if (!user) {
         return res.status(404).json({
           data: null,
           message: 'User not found',
-          code: 0
+          code: 0,
         });
       }
-
+  
       // Cập nhật các trường thông tin nếu có
       if (name) user.name = name;
       if (email) user.email = email;
-      if (password) user.password = password;
+      if (password) user.password = await bcrypt.hash(password, 10);
       if (phone) user.phone = phone;
-      if (role) user.role = role;
-      if (image)  {
-        const public_id = user.image.split('/').pop().split('.')[0]; // Lấy public_id từ URL cũ
-        await cloudinary.uploader.destroy(public_id); // Xóa ảnh cũ khỏi Cloudinary
-        user.image = image.path;
+      if (role){
+        if(req.personalRole === 'admin'){
+          user.role = role;
+        }
+        else{
+          return res.status(403).json({
+            data: null,
+            message: 'You are not authorized to access this resource',
+            code: 0
+          });
+        }
       }
-
-
+  
+      if (image) {
+        // Lấy public_id từ URL ảnh cũ
+        const public_id = user.image.split('/').pop().split('.')[0]; // Lấy public_id từ URL cũ
+        console.log(public_id)
+        // Xóa ảnh cũ khỏi Cloudinary nếu có
+        const result = await cloudinary.uploader.destroy(public_id);
+        if (result.result === 'ok') {
+          console.log('Delete success');
+        } else {
+          console.log('Delete failed');
+        }
+  
+        // Cập nhật ảnh mới
+        user.image = image.path; // Lưu đường dẫn ảnh mới (hoặc URL nếu bạn muốn lưu URL)
+      }
+  
       // Xử lý địa chỉ nếu có
       if (address) user.address.push(address);
-
+  
       // Lưu lại thay đổi
       await user.save();
-
+  
       res.status(200).json({
         data: user,
         message: 'User updated successfully',
-        code: 1
+        code: 1,
       });
     } catch (error) {
+      console.error(error);
       res.status(500).json({
         data: null,
         message: `Error updating user: ${error.message}`,
-        code: 0
+        code: 0,
       });
     }
   }
@@ -316,24 +410,16 @@ class UserController {
 
   }
 
-  // [POST] /api/user/:userId/removeCart/:bookId
+  // [DELETE] /api/cart/item/remove/:bookId
   async removeCartItem(req, res) {
-    const userId = req.user.id;
-    const { bookId } = req.params; // Get bookId from URL params
-
     try {
-      // Find user and populate their cart
-      let user = await User.findById(userId).populate('cart');
-      if (!user) {
-        return res.status(404).json({
-          data: null,
-          message: 'User not found',
-          code: 0
-        });
-      }
+      const bookId = req.params.bookId; // Get the bookId from the URL
+      const userId = req.user.userId; // Get the userId from the authenticated user (req.user)
 
-      // Check if the user has a cart
-      if (!user.cart) {
+      // Find the cart for the user
+      const cart = await Cart.findOne({ userId });
+
+      if (!cart) {
         return res.status(404).json({
           data: null,
           message: 'Cart not found',
@@ -341,37 +427,26 @@ class UserController {
         });
       }
 
-      // Find the item(s) to delete based on bookId
-      const itemIndex = user.cart.items.findIndex(item => item.book.toString() === bookId);
-
-      // If the item is not in the cart
-      if (itemIndex === -1) {
-        return res.status(404).json({
-          data: null,
-          message: 'Book not found in cart',
-          code: 0
-        });
+      for (let item of cart.items) {
+        const cartItem = await CartItem.findById(item._id);
+        if (cartItem.book.toString() === bookId) {
+          // Remove the item from the cart
+          cart.items.pull(item);
+          await cart.save();
+          await CartItem.findByIdAndDelete(item._id);
+          return res.status(200).json({
+            data: null,
+            message: 'Cart item removed successfully',
+            code: 1
+          });
+        }
       }
 
-      // Remove the item from the cart
-      const itemToRemove = user.cart.items[itemIndex];
-      await CartItem.findByIdAndDelete(itemToRemove._id); // Delete CartItem
-      user.cart.items.splice(itemIndex, 1); // Remove the item from the cart array
-
-      // Save the updated cart
-      await user.cart.save();
-
-      // Return success response
-      res.status(200).json({
-        data: null,
-        message: 'Book removed from cart successfully',
-        code: 1
-      });
-
-    } catch (error) {
+    }
+    catch (error) {
       res.status(500).json({
         data: null,
-        message: `Error deleting item from cart: ${error.message}`,
+        message: `Error removing cart item: ${error.message}`,
         code: 0
       });
     }
@@ -400,7 +475,7 @@ class UserController {
           items: []
         });
         await newCart.save();
-        user.cart = newCart._id;
+        user.cart = newCart;
         await user.save();
       }
       // Fetch books and their quantities from the cart
@@ -512,6 +587,56 @@ class UserController {
         });
     }
   }
+
+  // [POST] /api/v1/users/create: create user, only admin can access
+  async createUser(req, res){
+    try {
+      const { username, password, email, role, phone, address } = req.body;
+      console.log(req.body);
+      // check if required fields are missing
+      if (!username || !password || !email || !role) {
+        return res.status(400).json({
+          data: null,
+          message: 'Missing required fields',
+          code: 0
+        });
+      }
+
+      // check if role is valid
+      if (role !== 'admin' && role !== 'user') {
+        return res.status(400).json({
+          data: null,
+          message: 'Invalid role',
+          code: 0
+        });
+      }
+
+      // check if user already exists
+      const existingUser = await User.findOne({ username });
+      if (existingUser) {
+        return res.status(400).json({
+          data: null,
+          message: 'User already exists',
+          code: 0
+        });
+      }
+
+      const newUser = new User({ username, password, email, role });
+      await newUser.save();
+      res.status(200).json({
+        data: newUser,
+        message: 'User created successfully',
+        code: 1
+      });
+    } catch (error) {
+      res.status(500).json({
+        data: null,
+        message: `Error creating user: ${error.message}`,
+        code: 0
+      });
+    }
+  }
+
 }
 
 module.exports = new UserController();

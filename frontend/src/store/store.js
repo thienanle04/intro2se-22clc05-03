@@ -34,15 +34,23 @@ export default createStore({
       });
     },
     async fetchCart(state) {
-      // Simulate an API call to fetch the cart items
-      const res = await fetch(`/api/v1/users/${state.userId}/cart`, {
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${state.authToken}`,
-        },
-      });
-      const data = await res.json();
-      state.cartItems = data.data;
+      try {
+
+        const res = await fetch(`/api/v1/users/${state.userId}/cart`, {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${state.authToken}`,
+          },
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error('Failed to fetch cart');
+        }
+        state.cartItems = data.data;
+      } catch (error) {
+        console.error(error);
+        state.cartItems = [];
+      }
     },
     addToCart(state, { book }) {
       // Check if the book is already in the cart
@@ -86,15 +94,36 @@ export default createStore({
         confirmButtonText: "Yes, remove it!",
         cancelButtonText: "No, cancel!",
         reverseButtons: true
-      }).then((result) => {
+      }).then(async (result) => {
         if (result.isConfirmed) {
-          // Remove the book entirely from the cart
-          state.cartItems = state.cartItems.filter(item => item._id !== book._id);
-          swalWithBootstrapButtons.fire({
-            title: "Removed!",
-            text: `${book.title} has been removed from your cart`,
-            icon: "success"
-          });
+          try {
+            
+            const res = await fetch(`/api/v1/users/${state.userId}/removeCart/${book._id}`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${state.authToken}`,
+              },
+            });
+            if (!res.ok) {
+              throw new Error('Failed to fetch cart');
+            }
+            // Remove the book entirely from the cart
+            state.cartItems = state.cartItems.filter(item => item._id !== book._id);
+            swalWithBootstrapButtons.fire({
+              title: "Removed!",
+              text: `${book.title} has been removed from your cart`,
+              icon: "success"
+            });
+          }
+          catch (error) {
+            console.error(error);
+            swalWithBootstrapButtons.fire({
+              title: "Failed!",
+              text: "Failed to remove the book from your cart",
+              icon: "error"
+            });
+          }
         } else if (
           /* Read more about handling dismissals below */
           result.dismiss === Swal.DismissReason.cancel
