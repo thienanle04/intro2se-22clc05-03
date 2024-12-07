@@ -564,14 +564,14 @@ class UserController {
         // Save the new order
         await newOrder.save();
         user.order.push(newOrder._id);
-        // Xóa giỏ hàng
-        // await CartItem.deleteMany({ _id: { $in: user.cart.items } });
-        // await Cart.findByIdAndDelete(user.cart);
-        // user.cart = null;
-        // await user.save();
-
-        // // Clear the user's cart after successful order placement
-        // await User.findByIdAndUpdate(userId, { $unset: { cart: "" } });
+        
+        // Clear the user's cart
+        const cart = await Cart.findById(user.cart);
+        cart.items = [];
+        user.cart = null;
+        // Save the updated user and cart
+        await cart.save();
+        await user.save();
 
         res.status(200).json({
           data: newOrder,

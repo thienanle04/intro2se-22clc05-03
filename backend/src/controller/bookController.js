@@ -1,8 +1,9 @@
 const Book = require('../models/Books');
 const Genre = require('../models/Genre');
+const Review = require('../models/Review');
 
 class BookController {
-  // [GET] /api/books: create a new book
+  // [GET] /api/v1/books: create a new book
   async getAllBooks(req, res) {
     try {
       const books = await Book.find();
@@ -34,7 +35,7 @@ class BookController {
     }
   }
 
-  // [POST] /api/books: create a new book
+  // [POST] /api/v1/books: create a new book
   async createNewBook(req, res) {
     console.log(req.body);
     try {
@@ -98,7 +99,7 @@ class BookController {
     }
   }
 
-  // [GET] /api/books/bookId: get book by bookId
+  // [GET] /api/v1/books/bookId: get book by bookId
   async getBookById(req, res) {
     try {
       const book = await Book.findById(req.params.bookId);
@@ -128,7 +129,7 @@ class BookController {
     }
   }
 
-  // [PATCH] /api/books/bookId/update: update book by bookId
+  // [PATCH] /api/v1/books/bookId/update: update book by bookId
   async updateBookById(req, res) {
     const {
       title,
@@ -191,7 +192,7 @@ class BookController {
 
   }
 
-  // [DELETE] /api/books/bookId/delete: delete book by bookId
+  // [DELETE] /api/v1/books/bookId/delete: delete book by bookId
   async deleteBookById(req, res) {
     try {
       const bookId = req.params.bookId;
@@ -221,6 +222,7 @@ class BookController {
     }
   }
 
+  // [POST] /api/v1/books/addListBooks: add list books
   async addListBooks(req, res) {
     try {
       const listBooks = req.body;
@@ -286,6 +288,7 @@ class BookController {
     }
   }
 
+  // [GET] /api/v1/books/genre/:genre: get book by genre
   async getBookByGenre(req, res) {
     try {
       const genre = req.params.genre;
@@ -310,6 +313,48 @@ class BookController {
       res.status(500).json({
         data: null,
         message: 'Get book by genre failed with error: ' + error,
+        code: 0
+      });
+    }
+  }
+
+  // [POST] /api/v1/books/:bookId/review: review book
+  async reviewBook(req, res) {
+    try {
+      const bookId = req.params.bookId;
+      const { rating, comment } = req.body;
+      const userId = req.user.id;
+      const book = await Book.findById(bookId);
+
+      if (!book) {
+        return res.status(404).json({
+          data: null,
+          message: 'Book not found',
+          code: 0
+        });
+      }
+
+      const review = new Review({
+        user: userId,
+        book: bookId,
+        content: comment,
+        rating: rating
+      });
+      book.reviews.push(review);
+      book.rating = (book.rating + rating) / (book.reviews.length);
+      await review.save();
+      await book.save();
+      res.status(200).json({
+        data: {
+          book,
+        },
+        message: 'Review book successfully',
+        code: 1
+      });
+    }catch (error) {
+      res.status(500).json({
+        data: null,
+        message: 'Review book failed with error: ' + error,
         code: 0
       });
     }
