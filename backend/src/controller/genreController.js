@@ -1,0 +1,115 @@
+const Genre = require('../models/Genre');
+
+class genreController{
+  // [GET] /api/genres: get all genres
+  async getAllGenres(req, res){
+    try {
+      const genres = await Genre.find();
+      res.status(200).json({
+        data: {
+          genres: genres,
+        },
+        message: 'Get all genres successfully',
+        code: 1
+      });
+    } catch (error) {
+      res.status(500).json({
+        data: null,
+        message: 'Get all genres failed',
+        code: 0
+      });
+    }
+  }
+
+  // [POST] /api/genres: create a new genre
+  async createNewGenre(req, res){
+    try {
+      const { name } = req.body;
+
+      const genreFound = await Genre.findOne({name});
+      if (genreFound) {
+        res.status(500).json({
+          data: null,
+          message: 'Genre already exists',
+          code: 0
+        });
+      }
+
+      const genre = new Genre({
+        name,
+        isHidden: false,
+      });
+
+      await genre.save();
+
+      res.status(200).json({
+        data: {
+          genre: genre,
+        },
+        message: 'Create new genre successfully',
+        code: 1
+      });
+    } catch (error) {
+      res.status(500).json({
+        data: null,
+        message: 'Create new genre failed',
+        code: 0
+      });
+    }
+  }
+
+  // [PUT] /api/genres/:id: update a genre
+  async updateGenre(req, res){
+    try {
+      const { id } = req.params;
+      const { name, isHidden } = req.body;
+
+      const genre = await Genre.findById(id);
+      if (!genre) {
+        res.status(500).json({
+          data: null,
+          message: 'Genre not found',
+          code: 0
+        });
+      }
+    } catch(error) {
+      res.status(500).json({
+        data: null,
+        message: 'Update genre failed',
+        code: 0
+      });
+    }
+  }
+
+  // [DELETE] /api/genres/:id: delete a genre
+  async deleteGenre(req, res){
+    try {
+      const { id } = req.params;
+
+      const genre = await Genre.findById(id);
+      if (!genre) {
+        res.status(500).json({
+          data: null,
+          message: 'Genre not found',
+          code: 0
+        });
+      }
+
+      await genre.delete();
+
+      res.status(200).json({
+        data: null,
+        message: 'Delete genre successfully',
+        code: 1
+      });
+    } catch (error) {
+      res.status(500).json({
+        data: null,
+        message: 'Delete genre failed',
+        code: 0
+      });
+    }
+  }
+}
+
+module.exports = new genreController();

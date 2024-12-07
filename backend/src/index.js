@@ -55,12 +55,14 @@ app.use(express.urlencoded({ extended: true }));
 const userRouter = require('./router/userRouter.js');
 const authRouter = require('./router/authRouter.js');
 const bookRouter = require('./router/bookRouter.js');
+const genreRouter = require('./router/genreRouter.js');
 const swaggerDocs = require('./swagger.js');
 swaggerDocs(app, port);
 
 app.use('/api/v1/users', userRouter);
 app.use('/api/v1/auth', authRouter);
 app.use('/api/v1/books', bookRouter);
+app.use('/api/v1/genres', genreRouter);
 
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);

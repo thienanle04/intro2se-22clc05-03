@@ -140,8 +140,6 @@ class BookController {
       stock,
     } = req.body;
 
-    
-
     try {
       const bookId = req.params.bookId;
       const book = await Book.findById(bookId);
