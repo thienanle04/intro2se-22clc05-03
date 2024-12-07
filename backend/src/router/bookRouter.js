@@ -32,5 +32,8 @@ router
   .route('/search/:genre')  // Đặt genre là tham số động trong URL
   .get(bookController.getBookByGenre);
 
+router
+  .route('/:bookId/review')
+  .post(Authentication.authenticateToken ,bookController.reviewBook);
 
 module.exports = router;
