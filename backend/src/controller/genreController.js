@@ -110,6 +110,37 @@ class genreController{
       });
     }
   }
+
+  // [GET] /api/genres/:id: get genre by id
+  async getGenreById(req, res){
+    try {
+      const { id } = req.params;
+
+      const genre = await Genre.findById(id);
+      if (!genre) {
+        res.status(500).json({
+          data: null,
+          message: 'Genre not found',
+          code: 0
+        });
+      }
+
+      res.status(200).json({
+        data: {
+          genre: genre,
+        },
+        message: 'Get genre by id successfully',
+        code: 1
+      });
+
+    } catch (error) {
+      res.status(500).json({
+        data: null,
+        message: 'Get genre by id failed',
+        code: 0
+      });
+    }
+  }
 }
 
 module.exports = new genreController();

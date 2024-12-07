@@ -34,6 +34,7 @@ class Authentication {
         code: 0
       });
     }
+    req.role = "admin";
     next();
   }
 

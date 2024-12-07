@@ -12,3 +12,20 @@ router
 router
   .route("")
   .post(genreController.createNewGenre);
+
+// [PUT] /api/genres/{genreId}: update genre by genreId
+router
+  .route("/:genreId")
+  .put(genreController.updateGenre);
+
+// [DELETE] /api/genres/{genreId}: delete genre by genreId
+router
+  .route("/:genreId")
+  .delete(genreController.deleteGenre);
+
+// [GET] /api/genres/{genreId}: get genre by genreId
+router
+  .route("/:genreId")
+  .get(genreController.getGenreById);
+
+module.exports = router;
