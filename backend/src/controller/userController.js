@@ -11,7 +11,7 @@ const Genre = require('../models/Genre');
 
 // req.user = { userId, username, role }
 class UserController {
-   // [GET] /api/user
+   // [GET] /api/v1/user
    async getAllUsers(req, res) {
     try {
       const userData = await User.find();
@@ -28,7 +28,7 @@ class UserController {
       });
     }
   }
-  // [POST] /api/users
+  // [POST] /api/v1/users
   async createNewUser(req, res) {
     console.log('req.body', req.body);
     try {
@@ -96,7 +96,7 @@ class UserController {
       });
     }
   }
-  // [GET] /api/user/:userId
+  // [GET] /api/v1/user/:userId
   async getUserById(req, res) {
     try {
       const userId = req.params.userId;
@@ -125,7 +125,7 @@ class UserController {
     }
   }
 
-  // [PATCH] /api/user/update
+  // [PATCH] /api/v1/user/update
   async updateMyProfile(req, res) {
     try {
       const userId = req.params.userId; // Lấy ID từ params
@@ -197,7 +197,7 @@ class UserController {
     }
   }
 
-  // [DELETE] /api/user/delete/:userId
+  // [DELETE] /api/v1/user/delete/:userId
   async deleteUser(req, res) {
     const userId = req.params.userId;
   
@@ -284,7 +284,7 @@ class UserController {
     }
   }
 
-  // [POST] /api/user/:userId/addCart
+  // [POST] /api/v1/user/:userId/addCart
   async addCart(req, res) {
     const userId = req.user.id;
     const { bookName, quantity } = req.body;
@@ -365,7 +365,7 @@ class UserController {
     }
   }
 
-  // [POST] /api/user/:userId/removeCart
+  // [POST] /api/v1/user/:userId/removeCart
   async removeCart(req, res) {
     const userId = req.user.id;
 
@@ -410,7 +410,7 @@ class UserController {
 
   }
 
-  // [DELETE] /api/cart/item/remove/:bookId
+  // [DELETE] /api/v1/cart/item/remove/:bookId
   async removeCartItem(req, res) {
     try {
       const bookId = req.params.bookId; // Get the bookId from the URL
@@ -452,7 +452,7 @@ class UserController {
     }
   }
 
-  // [GET] /api/user/:userId/getCart
+  // [GET] /api/v1/user/:userId/getCart
   async getCart(req, res) {
     const userId = req.user.id;  // Assuming `req.user.id` holds the authenticated user's ID
     try {
@@ -520,6 +520,7 @@ class UserController {
     }
   }
 
+  // [POST] /api/v1/users/{userId}/payment
   async payment(req, res) {
     const userId = req.params.userId;
     const { name, email, phone, number, street, district, ward, city, cartItems } = req.body;
@@ -591,10 +592,10 @@ class UserController {
   // [POST] /api/v1/users/create: create user, only admin can access
   async createUser(req, res){
     try {
-      const { username, password, email, role, phone, address } = req.body;
+      const { username, password, role, } = req.body;
       console.log(req.body);
       // check if required fields are missing
-      if (!username || !password || !email || !role) {
+      if (!username || !password || !role ) {
         return res.status(400).json({
           data: null,
           message: 'Missing required fields',
@@ -621,7 +622,7 @@ class UserController {
         });
       }
 
-      const newUser = new User({ username, password, email, role });
+      const newUser = new User({ username, password, role });
       await newUser.save();
       res.status(200).json({
         data: newUser,
