@@ -2,7 +2,7 @@
     <div class="card">
         <div class="card-header mb-3 d-flex justify-content-between align-items-center">
             <h3>Modify And Delete Genre</h3>
-            <RouterLink to="/shop/addBook" class="btn btn-primary">
+            <RouterLink to="/shop/addCategory" class="btn btn-primary">
                 Add
             </RouterLink>
         </div>
@@ -12,7 +12,7 @@
             </div>
             <div class="col-7">
                 <input type="text" class="form-control" v-model="name" placeholder="Enter genre name"
-                    aria-label="Genre Name">
+                    aria-label="GenreName">
             </div>
         </div>
 
@@ -92,6 +92,7 @@ export default {
     name: "modifyCategoryComponent",
     data() {
         return {
+            name: '',
             selectedGenre: null, // Book selected for modification
             modifiedGenre: {}, // Temporary copy of the selected book for editing
             currentPage: 1, // Current page
@@ -101,7 +102,7 @@ export default {
         };
     },
     watch: {
-        genre() {
+        name() {
             this.searchGenres();
         }
     },
@@ -133,17 +134,18 @@ export default {
             }
         },
         async searchGenres() {
-            if (!this.genre) {
+            if (!this.name) {
                 this.genres = await this.getAllGenres();
                 return;
             }
 
             const allGenres = await this.getAllGenres(); // Use the `getAllBooks` method
-
+            console.log("name", this.name);
             this.genres = allGenres.filter(genre => {
                 const matchesName = this.name ? genre.name.includes(this.name) : true;
                 return matchesName;
             });
+            console.log(this.genres);
         },
 
         selectGenre(genre) {
@@ -156,7 +158,6 @@ export default {
                 alert("No book selected for modification.");
                 return;
             }
-            console.log(this.selectedGenre);
             const updatedGenre = {
                 name: this.modifiedGenre.name,
                 isHidden: this.selectedGenre.isHidden
@@ -172,7 +173,7 @@ export default {
             // Phát sự kiện 'delete-book' cùng với ISBN và Title sách
             try {
                 // Make a DELETE request to the API to delete the book
-                const response = await fetch(`http://localhost:8081/api/genres/${this.selectedGenre._id}`, {
+                const response = await fetch(`http://localhost:8081/api/v1/genres/${this.selectedGenre._id}`, {
                     method: 'DELETE', // Specify the method as DELETE
                     headers: {
                         'Content-Type': 'application/json',
@@ -196,28 +197,28 @@ export default {
                 alert('Failed to delete gerne. Please try again.');
                 return;
             }
-            alert(`Book "${this.selectedGenre.name}" has been deleted.`);
         },
         async updateGenre(updatedGenre) {
 
             try {
-                const formData = new FormData();
+                const formData = {
+                    name: updatedGenre.name,
+                    isHidden: updatedGenre.isHidden,
+                };
 
-                // Thêm các thuộc tính từ `updatedGenre` vào formData
-                formData.append('name', updatedGenre.name);
-                formData.append('isHidden', updatedGenre.isHidden);
-                const response = await fetch(`http://localhost:8081/api/genres/${this.selectedGenre._id}`, {
+                const response = await fetch(`http://localhost:8081/api/v1/genres/${this.selectedGenre._id}`, {
                     method: 'PUT',
                     headers: {
+                        'Content-Type': 'application/json', // Đặt header để thông báo server rằng dữ liệu là JSON
                         // 'Authorization': `Bearer ${this.getAuthToken()}`,
                     },
-                    body: formData, // Send the updated book data in the request body
+                    body: JSON.stringify(formData), // Chuyển đổi dữ liệu sang JSON trước khi gửi
                 });
 
                 if (response.ok) {
                     const data = await response.json();
                     console.log('Genre updated successfully:', data);
-                    alert(`Genre "${updatedGenre._id}" "${updatedGenre.name}"has been updated.`); // Notify user on success
+                    alert(`Genre "${this.selectedGenre._id}" "${updatedGenre.name}"has been updated.`); // Notify user on success
 
                     // Clear fields after update
                     this.selectedGenre = null;
