@@ -15,12 +15,12 @@ router
 
 // [PUT] /api/genres/{genreId}: update genre by genreId
 router
-  .route("/:genreId")
+  .route("/:id")
   .put(genreController.updateGenre);
 
 // [DELETE] /api/genres/{genreId}: delete genre by genreId
 router
-  .route("/:genreId")
+  .route("/:id")
   .delete(genreController.deleteGenre);
 
 // [GET] /api/genres/{genreId}: get genre by genreId

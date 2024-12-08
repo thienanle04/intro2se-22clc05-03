@@ -64,6 +64,8 @@ class genreController{
       const { id } = req.params;
       const { name, isHidden } = req.body;
 
+      console.log(id, name, isHidden);
+
       const genre = await Genre.findById(id);
       if (!genre) {
         res.status(500).json({
@@ -72,6 +74,20 @@ class genreController{
           code: 0
         });
       }
+
+      if(name) genre.name = name;
+      if(isHidden) genre.isHidden = isHidden;
+
+      await genre.save();
+
+      res.status(200).json({
+        data: {
+          genre: genre,
+        },
+        message: 'Update genre successfully',
+        code: 1
+      });
+
     } catch(error) {
       res.status(500).json({
         data: null,
@@ -85,6 +101,9 @@ class genreController{
   async deleteGenre(req, res){
     try {
       const { id } = req.params;
+      console.log(id);
+      const listGenre = await Genre.find();
+      console.log(listGenre)
 
       const genre = await Genre.findById(id);
       if (!genre) {
