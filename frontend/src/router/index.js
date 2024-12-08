@@ -97,7 +97,13 @@ const router = createRouter({
           name: 'OrderManagement',
           meta: { requiresAuth: true, roles: ['admin'] },
           component: () => import('@/components/shop/orderManagementComp.vue'),
-        }
+        },
+        {
+          path: 'modifyCategory',
+          name: 'ModifyAndDeleteCategory',
+          meta: { requiresAuth: true, roles: ['admin'] },
+          component: () => import('@/components/shop/modifyCategoryComp.vue'),
+        },
       ],
     }    
   ],

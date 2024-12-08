@@ -62,6 +62,7 @@ class genreController{
   async updateGenre(req, res){
     try {
       const { id } = req.params;
+      console.log('id' , id);
       const { name, isHidden } = req.body;
 
       const genre = await Genre.findById(id);
@@ -85,7 +86,7 @@ class genreController{
   async deleteGenre(req, res){
     try {
       const { id } = req.params;
-
+      console.log('id' , id);
       const genre = await Genre.findById(id);
       if (!genre) {
         res.status(500).json({
