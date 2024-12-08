@@ -61,7 +61,7 @@ class OrderController {
                     code: 0
                 });
             }
-            await order.delete();
+            await Order.findByIdAndDelete(orderId);
             res.status(200).json({
                 data: null,
                 message: 'Delete order successfully',

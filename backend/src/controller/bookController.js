@@ -39,58 +39,62 @@ class BookController {
   async createNewBook(req, res) {
     console.log(req.body);
     try {
-      const {
-        title,
-        author,
-        genre,
-        SBN,
-        description,
-        price,
-        stock,
-        image,
-        rating,
-      } = req.body;
+      const book = req.body;
+        const {
+          title,
+          author,
+          genre,
+          SBN,
+          description,
+          price,
+          stock,
+          rating,
+        } = book;
 
-      const bookFound = await Book.findOne({ title, author });
-      if (bookFound) {
-        res.status(500).json({
-          data: null,
-          message: 'Book already exists',
-          code: 0
+        if(req.file){
+          book.image = req.file.path;
+        }
+        
+
+        const bookFound = await Book.findOne({ title, author });
+        if (bookFound) {
+          return res.status(500).json({
+            data: null,
+            message: 'Book already exists',
+            code: 0
+          });
+        }
+
+        var genreFound = await Genre.findOne({ name: genre });
+        if (!genreFound) {
+          genreFound = new Genre({
+            name: genre,
+            isHidden: false,
+          });
+          await genreFound.save();
+        }
+
+        const newBook = new Book({
+          title,
+          image: book.image,
+          author,
+          genre: genreFound._id,
+          SBN,
+          description,
+          price,
+          stock,
+          rating
         });
-      }
+        await newBook.save();
 
-
-      var genreFound = await Genre.findOne({ name: genre });
-      if (!genreFound) {
-        genreFound = new Genre({
-          name: genre,
-          isHidden: false,
-        });
-        await genreFound.save();
-      }
-      console.log(image)
-
-      const book = new Book({
-        title,
-        image,
-        author,
-        genre: genreFound._id,
-        SBN,
-        description,
-        price,
-        stock,
-        rating
-      });
-      await book.save();
-      res.status(201).json({
-        data: {
-          book,
-        },
-        message: 'Create new book successfully',
-        code: 1
-      });
-    } catch (error) {
+        res.status(201).json({
+          data: {
+            book: newBook,
+          },
+          message: "Create new book successfully",
+          code: 1
+        })
+    } catch(error){
       res.status(500).json({
         data: null,
         message: 'Create new book failed with error: ' + error,
@@ -204,7 +208,6 @@ class BookController {
           code: 0
         });
       }
-      // await book.remove();
       await Book.findByIdAndDelete(bookId);
 
       res.status(200).json({

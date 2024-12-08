@@ -1,8 +1,8 @@
 const Genre = require('../models/Genre');
 
-class genreController{
+class genreController {
   // [GET] /api/genres: get all genres
-  async getAllGenres(req, res){
+  async getAllGenres(req, res) {
     try {
       const genres = await Genre.find();
       res.status(200).json({
@@ -22,11 +22,11 @@ class genreController{
   }
 
   // [POST] /api/genres: create a new genre
-  async createNewGenre(req, res){
+  async createNewGenre(req, res) {
     try {
       const { name } = req.body;
 
-      const genreFound = await Genre.findOne({name});
+      const genreFound = await Genre.findOne({ name });
       if (genreFound) {
         res.status(500).json({
           data: null,
@@ -59,11 +59,13 @@ class genreController{
   }
 
   // [PUT] /api/genres/:id: update a genre
-  async updateGenre(req, res){
+  async updateGenre(req, res) {
     try {
       const { id } = req.params;
-      console.log('id' , id);
+      console.log('id', id);
       const { name, isHidden } = req.body;
+
+      console.log(id, name, isHidden);
 
       const genre = await Genre.findById(id);
       if (!genre) {
@@ -73,7 +75,21 @@ class genreController{
           code: 0
         });
       }
-    } catch(error) {
+
+      if (name) genre.name = name;
+      if (isHidden) genre.isHidden = isHidden;
+
+      await genre.save();
+
+      res.status(200).json({
+        data: {
+          genre: genre,
+        },
+        message: 'Update genre successfully',
+        code: 1
+      });
+
+    } catch (error) {
       res.status(500).json({
         data: null,
         message: 'Update genre failed',
@@ -83,10 +99,13 @@ class genreController{
   }
 
   // [DELETE] /api/genres/:id: delete a genre
-  async deleteGenre(req, res){
+  async deleteGenre(req, res) {
     try {
       const { id } = req.params;
-      console.log('id' , id);
+      console.log(id);
+      const listGenre = await Genre.find();
+      console.log(listGenre)
+
       const genre = await Genre.findById(id);
       if (!genre) {
         res.status(500).json({
@@ -96,7 +115,7 @@ class genreController{
         });
       }
 
-      await genre.delete();
+      await Genre.findByIdAndDelete(id);
 
       res.status(200).json({
         data: null,
@@ -106,14 +125,14 @@ class genreController{
     } catch (error) {
       res.status(500).json({
         data: null,
-        message: 'Delete genre failed',
+        message: 'Delete genre failed: ' + error.message,
         code: 0
       });
     }
   }
 
   // [GET] /api/genres/:id: get genre by id
-  async getGenreById(req, res){
+  async getGenreById(req, res) {
     try {
       const { id } = req.params;
 
