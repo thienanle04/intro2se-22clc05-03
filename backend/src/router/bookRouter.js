@@ -14,7 +14,8 @@ router
 
 router
   .route('')
-  .post(Authentication.authenticateToken, Authentication.isAdmin ,bookController.createNewBook);
+  .post( upload.single('image'), bookController.createNewBook);
+  //Authentication.authenticateToken, Authentication.isAdmin ,
 
 router
   .route('/addListBooks')
