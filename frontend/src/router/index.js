@@ -91,7 +91,13 @@ const router = createRouter({
           name: 'ModifyAndDeleteUser',
           meta: { requiresAuth: true, roles: ['admin'] },
           component: () => import('@/components/shop/modifyUserComp.vue'),
-        }
+        },
+        {
+          path: 'modifyCategory',
+          name: 'ModifyAndDeleteCategory',
+          meta: { requiresAuth: true, roles: ['admin'] },
+          component: () => import('@/components/shop/modifyCategoryComp.vue'),
+        },
       ],
     }    
   ],

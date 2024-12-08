@@ -23,6 +23,21 @@
                     aria-label="Book Title">
             </div>
         </div>
+        <div class="row d-flex align-items-center mb-3">
+            <div class="col-5 text-end">
+                <span>Genre</span>
+            </div>
+            <div class="col-7">
+                <select class="form-control" v-model="genre" aria-label="Genre">
+                    <option value="" disabled selected>Select genre</option>
+                    <!-- Lặp qua genres để tạo các option -->
+                    <option v-for="(genreOption, index) in genres" :key="index" :value="genreOption">
+                        {{ genreOption.name }}
+                    </option>
+                </select>
+            </div>
+        </div>
+
         <div v-if="booksToModify.length > 0">
             <ul class="list-group mb-3">
                 <li class="list-group-item" v-for="book in paginatedBooks" :key="book._id">
@@ -161,7 +176,7 @@
 
 <script>
 export default {
-    name: "modifyBookComponent",
+    name: "modifyCategoryComponent",
     data() {
         return {
             isbn: '', // ISBN to search
@@ -170,7 +185,9 @@ export default {
             selectedBook: null, // Book selected for modification
             modifiedBook: {}, // Temporary copy of the selected book for editing
             currentPage: 1, // Current page
-            itemsPerPage: 5
+            itemsPerPage: 5,
+            genre: '',
+            genres: []
         };
     },
     watch: {
@@ -179,10 +196,17 @@ export default {
         },
         bookTitle() {
             this.searchBooks();
+        },
+        genre(){
+            console.log('check');
+            this.searchBooks();
         }
     },
     async created() {
-        this.booksToModify = await this.getAllBooks();
+        const res = await fetch(`http://localhost:8081/api/v1/books`);
+        const data = await res.json();
+        this.booksToModify = data.data.books;
+        this.genres = await this.getAllGenres();
     },
     computed: {
         totalPages() {
@@ -201,9 +225,23 @@ export default {
                 this.modifiedBook.image = file;
             }
         },
-        async getAllBooks() {
+        async getAllGenres() {
             try {
-                const response = await fetch('/api/v1/books'); // Perform GET request
+                const response = await fetch(`http://localhost:8081/api/v1/genres`); // Perform GET request
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json(); // Parse JSON response
+                return data.data.genres; // Return the books array
+            } catch (error) {
+                console.error("Failed to fetch genres:", error.message);
+                return []; // Return an empty array in case of an error
+            }
+        },
+        async getAllBooks(genre) {
+            console.log('genre', genre);
+            try {
+                const response = await fetch(`http://localhost:8081/api/v1/books/search/${genre}`); // Perform GET request
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
@@ -217,11 +255,11 @@ export default {
 
         async searchBooks() {
             if (!this.isbn && !this.bookTitle) {
-                this.booksToModify = await this.getAllBooks();
+                this.booksToModify = await this.getAllBooks(this.genre.name);
                 return;
             }
 
-            const allBooks = await this.getAllBooks(); // Use the `getAllBooks` method
+            const allBooks = await this.getAllBooks(this.genre.name); // Use the `getAllBooks` method
 
             this.booksToModify = allBooks.filter(book => {
                 const matchesIsbn = this.isbn ? book.SBN.includes(this.isbn) : true;
@@ -288,6 +326,7 @@ export default {
             } catch (error) {
                 console.error('Error deleting book:', error);
                 alert('Failed to delete book. Please try again.');
+                return;
             }
             alert(`Book "${this.selectedBook.title}" has been deleted.`);
         },
