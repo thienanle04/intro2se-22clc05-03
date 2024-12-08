@@ -115,7 +115,7 @@ class genreController{
         });
       }
 
-      await genre.delete();
+      await Genre.findByIdAndDelete(id);
 
       res.status(200).json({
         data: null,
@@ -125,7 +125,7 @@ class genreController{
     } catch (error) {
       res.status(500).json({
         data: null,
-        message: 'Delete genre failed',
+        message: 'Delete genre failed: ' + error.message,
         code: 0
       });
     }
