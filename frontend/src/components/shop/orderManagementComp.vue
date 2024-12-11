@@ -65,7 +65,7 @@
             </div>
         </div>
 
-        <!-- Order List -->
+                <!-- Order List -->
         <div v-if="filteredOrders.length > 0" class="table-responsive" style="max-height: 400px; overflow-y: auto;">
             <h5 class="mt-3">Order List:</h5>
             <table class="table table-bordered">
@@ -81,31 +81,35 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="order in filteredOrders" :key="order.id">
-                        <td>{{ order.id }}</td>
-                        <td>{{ order.customerName }}</td>
-                        <td>{{ formatToUTC7(order.orderDate) }}</td>
-                        <td>{{ order.status }}</td>
-                        <td>{{ order.totalAmount.toLocaleString() }}</td>
-                        <td>{{ order.address }}</td>
+                    <tr v-for="order in filteredOrders" :key="order._id">
+                        <td>{{ order._id }}</td> <!-- Display order ID -->
+                        <td>{{ order.details.name }}</td> <!-- Display customer name -->
+                        <td>{{ formatToUTC7(order.createdAt) }}</td> <!-- Display formatted order date -->
+                        <td>{{ order.status }}</td> <!-- Display order status -->
+                        <td>{{ order.total.toLocaleString() }}</td> <!-- Display total amount -->
+                        <td>
+                            {{ order.details.street }}, {{ order.details.district }}, {{ order.details.city }} <!-- Address -->
+                        </td>
                         <td>
                             <button 
                                 class="btn btn-sm"
                                 :class="{
-                                    'btn-warning': order.status === 'Pending',
-                                    'btn-primary': order.status === 'Shipping',
-                                    'btn-success': order.status === 'Delivered'
+                                    'btn-warning': order.status.toLowerCase() === 'pending',
+                                    'btn-primary': order.status.toLowerCase() === 'shipping',
+                                    'btn-success': order.status.toLowerCase() === 'delivered'
                                 }"
-                                :disabled="order.status === 'Delivered'"
+                                :disabled="order.status.toLowerCase() === 'delivered'"
                                 @click="changeStatus(order)"
                             >
                                 {{ getNextStatus(order.status) }}
                             </button>
                         </td>
+
                     </tr>
                 </tbody>
             </table>
         </div>
+
         <div v-else>
             <p class="text-muted">No orders found.</p>
         </div>
@@ -128,78 +132,50 @@ export default {
     computed: {
         filteredOrders() {
             return this.orders.filter(order => {
-                const matchesId = this.orderId ? order.id.includes(this.orderId) : true;
+                // Match by Order ID
+                const matchesId = this.orderId ? order._id.includes(this.orderId) : true;
+                
+                // Match by Customer Name
                 const matchesName = this.customerName
-                    ? order.customerName.toLowerCase().includes(this.customerName.toLowerCase())
+                    ? order.details.name.toLowerCase().includes(this.customerName.toLowerCase())
                     : true;
-                const matchesStatus = this.orderStatus ? order.status === this.orderStatus : true;
+                
+                // Match by Order Status
+                const matchesStatus = this.orderStatus ? order.status.toLowerCase() === this.orderStatus.toLowerCase() : true;
+                
+                // Match by Start Date
                 const matchesStartDate = this.startDate
-                    ? new Date(order.orderDate) >= new Date(this.startDate)
+                    ? new Date(order.createdAt) >= new Date(this.startDate)
                     : true;
+                
+                // Match by End Date
                 const matchesEndDate = this.endDate
-                    ? new Date(order.orderDate) <= new Date(this.endDate)
+                    ? new Date(order.createdAt) <= new Date(this.endDate)
                     : true;
+
+                // Return the combined result
                 return matchesId && matchesName && matchesStatus && matchesStartDate && matchesEndDate;
             });
         }
+
     },
     async mounted() {
         this.orders = await this.getAllOrders();
     },
     methods: {
         async getAllOrders() {
-            // todo: lấy data từ databse
-            const fakeOrders = [
-                {
-                    id: 'ORD001',
-                    customerName: 'fake data',
-                    orderDate: '2024-11-25T12:34:56Z',
-                    status: 'Pending',
-                    totalAmount: 500000,
-                    address: '123 Elm Street'
-                },
-                {
-                    id: 'ORD002',
-                    customerName: 'Jane Smith',
-                    orderDate: '2024-11-24T10:00:00Z',
-                    status: 'Delivered',
-                    totalAmount: 750000,
-                    address: '456 Oak Avenue'
-                },
-                {
-                    id: 'ORD003',
-                    customerName: 'Michael Lee',
-                    orderDate: '2024-11-23T15:45:30Z',
-                    status: 'Shipping',
-                    totalAmount: 300000,
-                    address: '789 Pine Road'
-                },
-                {
-                    id: 'ORD004',
-                    customerName: 'Sarah Taylor',
-                    orderDate: '2024-11-22T08:20:15Z',
-                    status: 'Pending',
-                    totalAmount: 250000,
-                    address: '321 Maple Lane'
-                },
-                {
-                    id: 'ORD005',
-                    customerName: 'Emily Clark',
-                    orderDate: '2024-11-21T16:50:00Z',
-                    status: 'Shipping',
-                    totalAmount: 1000000,
-                    address: '789 Birch Boulevard'
-                },
-                {
-                    id: 'ORD006',
-                    customerName: 'David Wilson',
-                    orderDate: '2024-11-20T13:00:10Z',
-                    status: 'Pending',
-                    totalAmount: 450000,
-                    address: '135 Cedar Street'
+         try {
+                const response = await fetch(`http://localhost:8081/api/v1/orders`); // Perform GET request
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
                 }
-            ];
-            return fakeOrders;
+                const data = await response.json(); // Parse JSON response
+
+                return data.data.orders; // Return the orders array
+            } catch (error) {
+                console.error("Failed to fetch orders:", error.message);
+                return []; // Return an empty array in case of an error
+            }
         },
         formatToUTC7(date) {
             const utcDate = new Date(date);
@@ -216,17 +192,41 @@ export default {
         },
         getNextStatus(currentStatus) {
             const statuses = ['Pending', 'Shipping', 'Delivered'];
-            const currentIndex = statuses.indexOf(currentStatus);
+            const currentIndex = statuses.indexOf(currentStatus.charAt(0).toUpperCase() + currentStatus.slice(1).toLowerCase()); // Normalize status
             return currentIndex < 2 ? statuses[currentIndex + 1] : '';
         },
-
 
         changeStatus(order) {
             const nextStatus = this.getNextStatus(order.status);
             if (nextStatus) {
-        //todo: cập nhật trạng thái status của order trên database
+                // Update the order status in the database by calling the API
+                this.updateOrderStatus(order._id, nextStatus)
+                    .then(() => {
+                        // Update the local order status after the API call
+                        order.status = nextStatus;
+                    })
+                    .catch(error => {
+                        console.error("Failed to update order status:", error);
+                    });
+            }
+        },
 
-                order.status = nextStatus;
+        async updateOrderStatus(orderId, status) {
+            try {
+                const response = await fetch(`http://localhost:8081/api/v1/orders/${orderId}/update`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ status }),
+                });
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                const data = await response.json();
+
+            } catch (error) {
+                console.error("Failed to update order status:", error.message);
             }
         }
     }
