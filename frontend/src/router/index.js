@@ -93,6 +93,12 @@ const router = createRouter({
           component: () => import('@/components/shop/modifyUserComp.vue'),
         },
         {
+          path: 'orderManagement',
+          name: 'OrderManagement',
+          meta: { requiresAuth: true, roles: ['admin'] },
+          component: () => import('@/components/shop/orderManagementComp.vue'),
+        },
+        {
           path: 'addCategory',
           name: 'AddNewCategory',
           meta: { requiresAuth: true, roles: ['admin'] },
@@ -105,7 +111,7 @@ const router = createRouter({
           component: () => import('@/components/shop/modifyCategoryComp.vue'),
         },
       ],
-    }
+    }    
   ],
 });
 
