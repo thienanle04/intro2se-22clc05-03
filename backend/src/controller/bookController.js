@@ -1,6 +1,7 @@
 const Book = require('../models/Books');
 const Genre = require('../models/Genre');
 const Review = require('../models/Review');
+const User = require('../models/Users');
 
 class BookController {
   // [GET] /api/v1/books: create a new book
@@ -107,14 +108,31 @@ class BookController {
   async getBookById(req, res) {
     try {
       const book = await Book.findById(req.params.bookId);
+      if (!book) {
+        return res.status(404).json({
+          data: null,
+          message: 'Book not found',
+          code: 0
+        });
+      }
 
       const genreId = book.genre;
       const genre = await Genre.findById(genreId);
 
+      const listComment = await Promise.all(book.reviews.map(async (reviewId) => {
+        const review = await Review.findById(reviewId);
+        const user = await User.findById(review.user);
+        return {
+          user: user.name,
+          avatar: user.image,
+          content: review.content        };
+      }));
+
       // Modify the genre in the response object, but not in the database
       const bookWithGenreName = {
         ...book.toObject(),
-        genre: genre.name  // Add the genre name in place of the genre ObjectId
+        genre: genre.name,  // Add the genre name in place of the genre ObjectId
+        reviews: listComment
       };
 
       res.status(200).json({
@@ -321,7 +339,7 @@ class BookController {
     }
   }
 
-  // [POST] /api/v1/books/:bookId/review: review book
+  // [POST] /api/v1/books/:bookId/ : review book
   async reviewBook(req, res) {
     try {
       const bookId = req.params.bookId;

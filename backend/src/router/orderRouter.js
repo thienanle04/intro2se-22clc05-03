@@ -3,6 +3,7 @@ const express = require('express');
 const router = express.Router();
 
 const orderController = require('../controller/orderController.js');
+const Authentication = require('../middleware/verifyToken.js');
 
 // [GET] /api/v1/orders: get all orders, only admin can access
 router
@@ -18,6 +19,12 @@ router
 router
   .route('/:orderId/delete')
   .delete(orderController.deleteOrder);
+
+// [GET] /api/v1/orders/myOrders: get all orders of current user, only user can access
+router
+.route('/myOrders')
+.get(Authentication.authenticateToken, orderController.getMyOrders);
+
 
 // [GET] /api/v1/orders/{orderId}: get order by orderId, only admin can access
 router

@@ -97,9 +97,34 @@ class OrderController {
         });
         
       } catch (error) {
-        
+        res.status(500).json({
+          data: null,
+          message: 'Get order by orderId failed with message: ' + error.message,
+          code: 0
+        });
       }
     }
+
+    async getMyOrders(req, res) {
+        const userId = req.user.id;
+        try {
+            const orders = await Order.find({ user: userId });
+            res.status(200).json({
+                data: {
+                    orders,
+                },
+                message: 'Get all orders of current user successfully',
+                code: 1
+            });
+        } catch (error) {
+            res.status(500).json({
+                data: null,
+                message: 'Get all orders of current user failed with message: ' + error.message,
+                code: 0
+            })
+        }
+    }
+    
 }
 
 module.exports = new OrderController();
