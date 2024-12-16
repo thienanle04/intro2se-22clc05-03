@@ -23,7 +23,7 @@ router
 // [GET] /api/v1/orders/myOrders: get all orders of current user, only user can access
 router
 .route('/myOrders')
-.get(Authentication.authenticateToken, Authentication.reCheckUser, orderController.getMyOrders);
+.get(Authentication.authenticateToken, orderController.getMyOrders);
 
 
 // [GET] /api/v1/orders/{orderId}: get order by orderId, only admin can access
