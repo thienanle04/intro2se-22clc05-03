@@ -1,8 +1,10 @@
 const Book = require('../models/Books');
 const Genre = require('../models/Genre');
+const Review = require('../models/Review');
+const User = require('../models/Users');
 
 class BookController {
-  // [GET] /api/books: create a new book
+  // [GET] /api/v1/books: create a new book
   async getAllBooks(req, res) {
     try {
       const books = await Book.find();
@@ -34,62 +36,66 @@ class BookController {
     }
   }
 
-  // [POST] /api/books: create a new book
+  // [POST] /api/v1/books: create a new book
   async createNewBook(req, res) {
     console.log(req.body);
     try {
-      const {
-        title,
-        author,
-        genre,
-        SBN,
-        description,
-        price,
-        stock,
-        image,
-        rating,
-      } = req.body;
+      const book = req.body;
+        const {
+          title,
+          author,
+          genre,
+          SBN,
+          description,
+          price,
+          stock,
+          rating,
+        } = book;
 
-      const bookFound = await Book.findOne({ title, author });
-      if (bookFound) {
-        res.status(500).json({
-          data: null,
-          message: 'Book already exists',
-          code: 0
+        if(req.file){
+          book.image = req.file.path;
+        }
+        
+
+        const bookFound = await Book.findOne({ title, author });
+        if (bookFound) {
+          return res.status(500).json({
+            data: null,
+            message: 'Book already exists',
+            code: 0
+          });
+        }
+
+        var genreFound = await Genre.findOne({ name: genre });
+        if (!genreFound) {
+          genreFound = new Genre({
+            name: genre,
+            isHidden: false,
+          });
+          await genreFound.save();
+        }
+
+        const newBook = new Book({
+          title,
+          image: book.image,
+          author,
+          genre: genreFound._id,
+          SBN,
+          description,
+          price,
+          stock,
+          rating
         });
-      }
+        await newBook.save();
 
-
-      var genreFound = await Genre.findOne({ name: genre });
-      if (!genreFound) {
-        genreFound = new Genre({
-          name: genre,
-          isHidden: false,
-        });
-        await genreFound.save();
-      }
-      console.log(image)
-
-      const book = new Book({
-        title,
-        image,
-        author,
-        genre: genreFound._id,
-        SBN,
-        description,
-        price,
-        stock,
-        rating
-      });
-      await book.save();
-      res.status(201).json({
-        data: {
-          book,
-        },
-        message: 'Create new book successfully',
-        code: 1
-      });
-    } catch (error) {
+        res.status(201).json({
+          data: {
+            book: newBook,
+          },
+          message: "Create new book successfully",
+          code: 1
+        })
+    } catch(error){
       res.status(500).json({
         data: null,
         message: 'Create new book failed with error: ' + error,
@@ -98,18 +104,35 @@ class BookController {
     }
   }
 
-  // [GET] /api/books/bookId: get book by bookId
+  // [GET] /api/v1/books/bookId: get book by bookId
   async getBookById(req, res) {
     try {
       const book = await Book.findById(req.params.bookId);
+      if (!book) {
+        return res.status(404).json({
+          data: null,
+          message: 'Book not found',
+          code: 0
+        });
+      }
 
       const genreId = book.genre;
       const genre = await Genre.findById(genreId);
 
+      const listComment = await Promise.all(book.reviews.map(async (reviewId) => {
+        const review = await Review.findById(reviewId);
+        const user = await User.findById(review.user);
+        return {
+          user: user.name,
+          avatar: user.image,
+          content: review.content        };
+      }));
+
       // Modify the genre in the response object, but not in the database
       const bookWithGenreName = {
         ...book.toObject(),
-        genre: genre.name  // Add the genre name in place of the genre ObjectId
+        genre: genre.name,  // Add the genre name in place of the genre ObjectId
+        reviews: listComment
       };
 
       res.status(200).json({
@@ -128,7 +151,7 @@ class BookController {
     }
   }
 
-  // [PATCH] /api/books/bookId/update: update book by bookId
+  // [PATCH] /api/v1/books/bookId/update: update book by bookId
   async updateBookById(req, res) {
     const {
       title,
@@ -139,8 +162,6 @@ class BookController {
       price,
       stock,
     } = req.body;
-
-    
 
     try {
       const bookId = req.params.bookId;
@@ -193,7 +214,7 @@ class BookController {
 
   }
 
-  // [DELETE] /api/books/bookId/delete: delete book by bookId
+  // [DELETE] /api/v1/books/bookId/delete: delete book by bookId
   async deleteBookById(req, res) {
     try {
       const bookId = req.params.bookId;
@@ -205,7 +226,6 @@ class BookController {
           code: 0
         });
       }
-      // await book.remove();
       await Book.findByIdAndDelete(bookId);
 
       res.status(200).json({
@@ -223,6 +243,7 @@ class BookController {
     }
   }
 
+  // [POST] /api/v1/books/addListBooks: add list books
   async addListBooks(req, res) {
     try {
       const listBooks = req.body;
@@ -288,6 +309,7 @@ class BookController {
     }
   }
 
+  // [GET] /api/v1/books/genre/:genre: get book by genre
   async getBookByGenre(req, res) {
     try {
       const genre = req.params.genre;
@@ -312,6 +334,48 @@ class BookController {
       res.status(500).json({
         data: null,
         message: 'Get book by genre failed with error: ' + error,
+        code: 0
+      });
+    }
+  }
+
+  // [POST] /api/v1/books/:bookId/ : review book
+  async reviewBook(req, res) {
+    try {
+      const bookId = req.params.bookId;
+      const { rating, comment } = req.body;
+      const userId = req.user.id;
+      const book = await Book.findById(bookId);
+
+      if (!book) {
+        return res.status(404).json({
+          data: null,
+          message: 'Book not found',
+          code: 0
+        });
+      }
+
+      const review = new Review({
+        user: userId,
+        book: bookId,
+        content: comment,
+        rating: rating
+      });
+      book.reviews.push(review);
+      book.rating = (book.rating + rating) / (book.reviews.length);
+      await review.save();
+      await book.save();
+      res.status(200).json({
+        data: {
+          book,
+        },
+        message: 'Review book successfully',
+        code: 1
+      });
+    }catch (error) {
+      res.status(500).json({
+        data: null,
+        message: 'Review book failed with error: ' + error,
         code: 0
       });
     }

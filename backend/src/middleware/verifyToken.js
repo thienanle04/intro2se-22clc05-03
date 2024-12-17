@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const User = require('../models/Users');
 
 class Authentication {
   authenticateToken(req, res, next) {
@@ -33,13 +34,16 @@ class Authentication {
         code: 0
       });
     }
+    req.role = "admin";
     next();
   }
 
-  reCheckUser(req, res, next) {
+  async reCheckUser(req, res, next) {
     const userId = req.params.userId;
     const reqUserId = req.user.id;
-    if (userId !== reqUserId && req.user.role !== 'admin') {
+    const personal = await User.findById(reqUserId)
+    req.personalRole = personal.role;
+    if (userId !== reqUserId && personal.role !== 'admin') {
       return res.status(403).json({
         data: null,
         message: 'You are not authorized to access this resource',

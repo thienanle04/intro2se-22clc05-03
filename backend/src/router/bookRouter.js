@@ -14,15 +14,16 @@ router
 
 router
   .route('')
-  .post(Authentication.authenticateToken, Authentication.isAdmin ,bookController.createNewBook);
+  .post( upload.single('image'), bookController.createNewBook);
+  //Authentication.authenticateToken, Authentication.isAdmin ,
 
 router
   .route('/addListBooks')
-  .post(Authentication.authenticateToken, Authentication.isAdmin,upload.single('image'), bookController.addListBooks)
+  .post(Authentication.authenticateToken, Authentication.isAdmin, upload.single('image'), bookController.addListBooks)
 
 router
   .route('/:bookId/update')
-  .patch(Authentication.authenticateToken, Authentication.isAdmin, bookController.updateBookById);
+  .patch(Authentication.authenticateToken, Authentication.isAdmin, upload.single('image'), bookController.updateBookById);
 
 router
   .route('/:bookId/delete')
@@ -32,5 +33,8 @@ router
   .route('/search/:genre')  // Đặt genre là tham số động trong URL
   .get(bookController.getBookByGenre);
 
+router
+  .route('/:bookId/review')
+  .post(Authentication.authenticateToken ,bookController.reviewBook);
 
 module.exports = router;

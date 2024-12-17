@@ -90,7 +90,7 @@
                                     <!-- Image Input -->
                                     <div class="mb-3">
                                         <label for="userImage" class="form-label">Upload Image</label>
-                                        <input type="file" id="userImage" class="form-control"
+                                        <input type="file" name="image" id="userImage" class="form-control"
                                             @change="handleFileUpload" accept="image/*">
                                     </div>
 
@@ -174,15 +174,8 @@ export default {
     methods: {
         handleFileUpload(event) {
             const file = event.target.files[0]; // Get the first file from the input
-            if (file) {
-                const reader = new FileReader();
-
-                // Read the file as a Data URL to preview the image or send it to the server
-                reader.onload = () => {
-                    this.modifiedUser.image = reader.result; // Store the base64 string or file URL
-                };
-
-                reader.readAsDataURL(file); // Start reading the file
+            if(file){
+                this.modifiedUser.image = file;
             }
         },
         async getAllUsers() {

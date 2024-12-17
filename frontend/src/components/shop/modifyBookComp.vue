@@ -23,6 +23,21 @@
                     aria-label="Book Title">
             </div>
         </div>
+        <div class="row d-flex align-items-center mb-3">
+            <div class="col-5 text-end">
+                <span>Genre</span>
+            </div>
+            <div class="col-7">
+                <select class="form-control" v-model="genre" aria-label="Genre">
+                    <option value="" disabled selected>Select genre</option>
+                    <!-- Lặp qua genres để tạo các option -->
+                    <option v-for="(genreOption, index) in genres" :key="index" :value="genreOption">
+                        {{ genreOption.name }}
+                    </option>
+                </select>
+            </div>
+        </div>
+
         <div v-if="booksToModify.length > 0">
             <ul class="list-group mb-3">
                 <li class="list-group-item" v-for="book in paginatedBooks" :key="book._id">
@@ -85,8 +100,8 @@
                                     <!-- Image URL Input -->
                                     <div class="mb-3">
                                         <label for="bookImage" class="form-label">Image URL</label>
-                                        <input type="url" id="bookImage" class="form-control"
-                                            v-model="modifiedBook.image" placeholder="Enter image URL">
+                                        <input type="file" name="image" id="bookImage" class="form-control"
+                                            @change="handleFileUpload" accept="image/*" placeholder="Enter image URL">
                                     </div>
 
                                     <!-- Description Input -->
@@ -115,8 +130,8 @@
                                     <!-- ISBN Input -->
                                     <div class="mb-3">
                                         <label for="bookISBN" class="form-label">ISBN</label>
-                                        <input type="text" id="bookISBN" class="form-control"
-                                            v-model="modifiedBook.SBN" placeholder="Enter ISBN">
+                                        <input type="text" id="bookISBN" class="form-control" v-model="modifiedBook.SBN"
+                                            placeholder="Enter ISBN">
                                     </div>
 
                                     <!-- Action Buttons -->
@@ -138,7 +153,8 @@
                     <li class="page-item" :class="{ disabled: currentPage === 1 }">
                         <button class="page-link" @click="changePage(currentPage - 1)">Previous</button>
                     </li>
-                    <li class="page-item" v-for="page in totalPages" :key="page" :class="{ active: currentPage === page }">
+                    <li class="page-item" v-for="page in totalPages" :key="page"
+                        :class="{ active: currentPage === page }">
                         <button class="page-link" @click="changePage(page)">{{ page }}</button>
                     </li>
                     <li class="page-item" :class="{ disabled: currentPage === totalPages }">
@@ -160,7 +176,7 @@
 
 <script>
 export default {
-    name: "modifyBookComponent",
+    name: "modifyCategoryComponent",
     data() {
         return {
             isbn: '', // ISBN to search
@@ -169,7 +185,9 @@ export default {
             selectedBook: null, // Book selected for modification
             modifiedBook: {}, // Temporary copy of the selected book for editing
             currentPage: 1, // Current page
-            itemsPerPage: 5
+            itemsPerPage: 5,
+            genre: '',
+            genres: []
         };
     },
     watch: {
@@ -178,10 +196,17 @@ export default {
         },
         bookTitle() {
             this.searchBooks();
+        },
+        genre(){
+            console.log('check');
+            this.searchBooks();
         }
     },
     async created() {
-        this.booksToModify = await this.getAllBooks();
+        const res = await fetch(`http://localhost:8081/api/v1/books`);
+        const data = await res.json();
+        this.booksToModify = data.data.books;
+        this.genres = await this.getAllGenres();
     },
     computed: {
         totalPages() {
@@ -194,9 +219,29 @@ export default {
         }
     },
     methods: {
-        async getAllBooks() {
+        handleFileUpload(event) {
+            const file = event.target.files[0]; // Get the first file from the input
+            if (file) {
+                this.modifiedBook.image = file;
+            }
+        },
+        async getAllGenres() {
             try {
-                const response = await fetch('/api/v1/books'); // Perform GET request
+                const response = await fetch(`http://localhost:8081/api/v1/genres`); // Perform GET request
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json(); // Parse JSON response
+                return data.data.genres; // Return the books array
+            } catch (error) {
+                console.error("Failed to fetch genres:", error.message);
+                return []; // Return an empty array in case of an error
+            }
+        },
+        async getAllBooks(genre) {
+            console.log('genre', genre);
+            try {
+                const response = await fetch(`http://localhost:8081/api/v1/books/search/${genre}`); // Perform GET request
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
@@ -210,11 +255,11 @@ export default {
 
         async searchBooks() {
             if (!this.isbn && !this.bookTitle) {
-                this.booksToModify = await this.getAllBooks();
+                this.booksToModify = await this.getAllBooks(this.genre.name);
                 return;
             }
 
-            const allBooks = await this.getAllBooks(); // Use the `getAllBooks` method
+            const allBooks = await this.getAllBooks(this.genre.name); // Use the `getAllBooks` method
 
             this.booksToModify = allBooks.filter(book => {
                 const matchesIsbn = this.isbn ? book.SBN.includes(this.isbn) : true;
@@ -243,7 +288,7 @@ export default {
                 genre: this.modifiedBook.genre,
                 image: this.modifiedBook.image,
                 description: this.modifiedBook.description,
-                price: this.price,
+                price: this.modifiedBook.price,
                 rating: this.modifiedBook.rating,
                 SBN: this.modifiedBook.SBN
             };
@@ -281,18 +326,31 @@ export default {
             } catch (error) {
                 console.error('Error deleting book:', error);
                 alert('Failed to delete book. Please try again.');
+                return;
             }
             alert(`Book "${this.selectedBook.title}" has been deleted.`);
         },
         async updateBook(updatedBook, token) {
             try {
+                const formData = new FormData();
+
+                // Thêm các thuộc tính từ `updatedBook` vào formData
+                formData.append('title', updatedBook.title);
+                formData.append('author', updatedBook.author);
+                formData.append('stock', updatedBook.stock);
+                formData.append('genre', updatedBook.genre);
+                formData.append('image', updatedBook.image);
+                formData.append('description', updatedBook.description);
+                formData.append('price', updatedBook.price); // Giá từ `this.price`
+                formData.append('rating', updatedBook.rating);
+                formData.append('SBN', updatedBook.SBN);
+
                 const response = await fetch(`/api/v1/books/${this.selectedBook._id}/update`, {
                     method: 'PATCH',
                     headers: {
-                        'Content-Type': 'application/json',
                         'Authorization': `Bearer ${this.getAuthToken()}`,
                     },
-                    body: JSON.stringify(updatedBook), // Send the updated book data in the request body
+                    body: formData, // Send the updated book data in the request body
                 });
 
                 if (response.ok) {
@@ -317,7 +375,7 @@ export default {
         // Method to retrieve the auth token (example)
         getAuthToken() {
             // This should retrieve the token from your app's state or storage
-            return this.$store.getters.getAuthToken  || ''; // Replace with actual method to get the token
+            return this.$store.getters.getAuthToken || ''; // Replace with actual method to get the token
         },
         changePage(page) {
             if (page < 1 || page > this.totalPages) return;

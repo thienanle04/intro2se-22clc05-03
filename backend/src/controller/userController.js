@@ -3,11 +3,15 @@ const Cart = require("../models/Cart");
 const CartItem = require("../models/CartItem");
 const Book = require("../models/Books");
 const Order = require("../models/Order");
+
+const cloudinary = require('cloudinary').v2; // Đảm bảo import Cloudinary
+const upload = require('../config/cloudinary.config'); // Đảm bảo import cấu hình Cloudinary (nếu bạn sử dụng multer-storage-cloudinary)
 const Genre = require('../models/Genre');
+
 
 // req.user = { userId, username, role }
 class UserController {
-   // [GET] /api/user
+   // [GET] /api/v1/user
    async getAllUsers(req, res) {
     try {
       const userData = await User.find();
@@ -24,10 +28,11 @@ class UserController {
       });
     }
   }
-  // [POST] /api/users
+  // [POST] /api/v1/users
   async createNewUser(req, res) {
     console.log('req.body', req.body);
     try {
+      const image = req.file;
       const {
         name,
         email,
@@ -35,7 +40,6 @@ class UserController {
         password,
         phone, 
         address,
-        image
       } = req.body;
 
       const hashedPassword = await bcrypt.hash(password, 10);
@@ -48,7 +52,6 @@ class UserController {
           code: 0
         });
       }
-
       const user = new User({
         name: name,
         email: email,
@@ -58,6 +61,25 @@ class UserController {
         address: address,
         image: image
       });
+      if (image) {
+        // Lấy public_id từ URL ảnh cũ
+        const public_id = user.image.split('/').pop().split('.')[0]; // Lấy public_id từ URL cũ
+        console.log(public_id)
+        // Xóa ảnh cũ khỏi Cloudinary nếu có
+        const result = await cloudinary.uploader.destroy(public_id);
+        if (result.result === 'ok') {
+          console.log('Delete success');
+        } else {
+          console.log('Delete failed');
+        }
+  
+        // Cập nhật ảnh mới
+        user.image = image.path; // Lưu đường dẫn ảnh mới (hoặc URL nếu bạn muốn lưu URL)
+      }
+  
+      // Xử lý địa chỉ nếu có
+      if (address) user.address.push(address);
+
       await user.save();
       res.status(201).json({
         data: {
@@ -74,7 +96,7 @@ class UserController {
       });
     }
   }
-  // [GET] /api/user/:userId
+  // [GET] /api/v1/user/:userId
   async getUserById(req, res) {
     try {
       const userId = req.params.userId;
@@ -103,56 +125,79 @@ class UserController {
     }
   }
 
-  // [PATCH] /api/user/update
+  // [PATCH] /api/v1/user/update
   async updateMyProfile(req, res) {
     try {
-      const userId = req.params.userId;
-      const { email, password, name, address, phone } = req.body;
-      const img = req.file;
+      const userId = req.params.userId; // Lấy ID từ params
+      const { email, password, name, address, phone, role } = req.body;
+      const image = req.file; // Ảnh mới nếu có
+      console.log('image', image);
       const user = await User.findById(userId);
-
+  
       if (!user) {
         return res.status(404).json({
           data: null,
           message: 'User not found',
-          code: 0
+          code: 0,
         });
       }
-
+  
       // Cập nhật các trường thông tin nếu có
       if (name) user.name = name;
       if (email) user.email = email;
       if (password) user.password = await bcrypt.hash(password, 10);
       if (phone) user.phone = phone;
-      if (role) user.role = role;
-      if (image)  {
-        const public_id = user.image.split('/').pop().split('.')[0]; // Lấy public_id từ URL cũ
-        await cloudinary.uploader.destroy(public_id); // Xóa ảnh cũ khỏi Cloudinary
-        user.image = image.path;
+      if (role){
+        if(req.personalRole === 'admin'){
+          user.role = role;
+        }
+        else{
+          return res.status(403).json({
+            data: null,
+            message: 'You are not authorized to access this resource',
+            code: 0
+          });
+        }
       }
-
-
+  
+      if (image) {
+        // Lấy public_id từ URL ảnh cũ
+        const public_id = user.image.split('/').pop().split('.')[0]; // Lấy public_id từ URL cũ
+        console.log(public_id)
+        // Xóa ảnh cũ khỏi Cloudinary nếu có
+        const result = await cloudinary.uploader.destroy(public_id);
+        if (result.result === 'ok') {
+          console.log('Delete success');
+        } else {
+          console.log('Delete failed');
+        }
+  
+        // Cập nhật ảnh mới
+        user.image = image.path; // Lưu đường dẫn ảnh mới (hoặc URL nếu bạn muốn lưu URL)
+      }
+  
       // Xử lý địa chỉ nếu có
       if (address) user.address.push(address);
-
+  
       // Lưu lại thay đổi
       await user.save();
-
+  
       res.status(200).json({
         data: user,
         message: 'User updated successfully',
-        code: 1
+        code: 1,
       });
     } catch (error) {
+      console.error(error);
       res.status(500).json({
         data: null,
         message: `Error updating user: ${error.message}`,
-        code: 0
+        code: 0,
       });
     }
   }
 
-  // [DELETE] /api/user/delete/:userId
+  // [DELETE] /api/v1/user/delete/:userId
   async deleteUser(req, res) {
     const userId = req.params.userId;
   
@@ -239,7 +284,7 @@ class UserController {
     }
   }
 
-  // [POST] /api/user/:userId/addCart
+  // [POST] /api/v1/user/:userId/addCart
   async addCart(req, res) {
     const userId = req.user.id;
     const { bookName, quantity } = req.body;
@@ -330,7 +375,7 @@ class UserController {
     }
   }
 
-  // [POST] /api/user/:userId/removeCart
+  // [POST] /api/v1/user/:userId/removeCart
   async removeCart(req, res) {
     const userId = req.user.id;
 
@@ -375,7 +420,7 @@ class UserController {
 
   }
 
-  // [DELETE] /api/cart/item/remove/:bookId
+  // [DELETE] /api/v1/cart/item/remove/:bookId
   async removeCartItem(req, res) {
     try {
       const bookId = req.params.bookId; // Get the bookId from the URL
@@ -417,7 +462,7 @@ class UserController {
     }
   }
 
-  // [GET] /api/user/:userId/getCart
+  // [GET] /api/v1/user/:userId/getCart
   async getCart(req, res) {
     const userId = req.user.id;  // Assuming `req.user.id` holds the authenticated user's ID
     try {
@@ -448,8 +493,8 @@ class UserController {
 
       for (let item of user.cart.items) {
         const cartItem = await CartItem.findById(item._id);
-        const book = await Book.findById(cartItem.book); // Assuming each cart item has a `bookId` reference
 
+        const book = await Book.findById(cartItem.book); // Assuming each cart item has a `bookId` reference
         if (book) {
           const genreId = book.genre;
           const genre = await Genre.findById(genreId);
@@ -485,78 +530,83 @@ class UserController {
     }
   }
 
+  // [POST] /api/v1/users/{userId}/payment
   async payment(req, res) {
-    // const userId = req.user.id;
     const userId = req.params.userId;
-    const { name, email, phone, number, street, district, ward, city } = req.body;
+    const { name, email, phone, number, street, district, ward, city, total} = req.body;
+
     try {
-      const user = await User.findById(userId).populate('cart');
-      if (!user) {
-        return res.status(404).json({
-          data: null,
-          message: 'User not found',
-          code: 0
-        });
-      }
-
-      if (!user.cart) {
-        return res.status(404).json({
-          data: null,
-          message: 'Cart not found',
-          code: 0
-        });
-      }
-
-      // Tạo đơn hàng mới
-      const newOrder = new Order({
-        user: userId,
-        items: user.cart.items,
-        details: {
-          name,
-          email,
-          phone,
-          number,
-          street,
-          district,
-          ward,
-          city
+        // Validate the user existence
+        const user = await User.findById(userId).populate('cart');
+        if (!user) {
+            return res.status(404).json({
+                data: null,
+                message: 'User not found',
+                code: 0
+            });
         }
-      });
-      await newOrder.save();
-      user.order.push(newOrder._id);
-      // Xóa giỏ hàng
-      await CartItem.deleteMany({ _id: { $in: user.cart.items } });
-      await Cart.findByIdAndDelete(user.cart);
-      user.cart = null;
-      await user.save();
 
-      // Trả về kết quả thành công
+        // Ensure cart items are present in the request
+        if (!user.cart.items || user.cart.items.length === 0) {
+            return res.status(400).json({
+                data: null,
+                message: 'Cart is empty or not provided',
+                code: 0
+            });
+        }
 
-      res.status(200).json({
-        data: newOrder,
-        message: 'Payment successfully',
-        code: 1
-      });
+        // Create a new order with the provided details and cart items
+        const newOrder = new Order({
+            user: userId,
+            items: user.cart.items, // Directly use cartItems from the request body
+            details: {
+                name,
+                email,
+                phone,
+                number,
+                street,
+                district,
+                ward,
+                city
+            },
+            total: total
+        });
 
+        // Save the new order
+        await newOrder.save();
+        user.order.push(newOrder._id);
+        
+        // Clear the user's cart
+        const cart = await Cart.findById(user.cart);
+        cart.items = [];
+        user.cart = null;
+        // Save the updated user and cart
+        await cart.save();
+        await user.save();
 
-
+        res.status(200).json({
+          data: newOrder,
+          message: 'Payment successfully',
+          code: 1
+        });
+    
     } catch (error) {
-      res.status(500).json({
-        data: null,
-        message: `Error payment: ${error.message}`,
-        code: 0
-      });
+        console.error(error);
+        return res.status(500).json({
+            data: null,
+            message: `Error payment: ${error.message}`,
+            code: 0
+        });
     }
-
   }
 
   // [POST] /api/v1/users/create: create user, only admin can access
   async createUser(req, res){
     try {
-      const { username, password, email, role, phone, address } = req.body;
+      const { username, password, role, } = req.body;
       console.log(req.body);
       // check if required fields are missing
-      if (!username || !password || !email || !role) {
+      if (!username || !password || !role ) {
         return res.status(400).json({
           data: null,
           message: 'Missing required fields',
@@ -583,7 +633,7 @@ class UserController {
         });
       }
 
-      const newUser = new User({ username, password, email, role });
+      const newUser = new User({ username, password, role });
       await newUser.save();
       res.status(200).json({
         data: newUser,

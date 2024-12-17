@@ -31,7 +31,8 @@ router
   .route('/:userId/update')
   .patch(
     Authentication.authenticateToken, 
-    Authentication.reCheckUser,upload.single('image'), 
+    Authentication.reCheckUser,
+    upload.single('image'), 
     userController.updateMyProfile
   );
 

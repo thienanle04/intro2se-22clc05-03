@@ -16,7 +16,7 @@
             </div>
 
             <!-- Display Search Results -->
-            <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 g-4 mx-5">
+            <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-6 g-4 mx-5">
                 <div v-for="book in currentPageBooks" :key="book.id" class="col">
                     <div class="card text-center" style="width: 200px;">
                         <!-- Image -->

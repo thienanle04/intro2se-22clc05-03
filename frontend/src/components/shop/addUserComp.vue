@@ -74,15 +74,6 @@
         </div>
 
         <div class="row d-flex align-items-center mb-3">
-            <div class="col-5 text-end">
-                <span>Image URL</span>
-            </div>
-            <div class="col-7">
-                <input type="file" id="userImage" class="form-control" @change="handleFileUpload" accept="image/*">
-            </div>
-        </div>
-
-        <div class="row d-flex align-items-center mb-3">
             <div class="offset-5">
                 <button type="button" class="btn btn-primary" @click="submit">Submit</button>
             </div>
@@ -103,29 +94,14 @@ export default {
                 role: "",
                 phone: "",
                 address: "",
-                image: "", // file
             },
         };
     },
     methods: {
-        handleFileUpload(event) {
-            const file = event.target.files[0]; // Get the first file from the input
-            if (file) {
-                const reader = new FileReader();
-
-                // Read the file as a Data URL to preview the image or send it to the server
-                reader.onload = () => {
-                    this.user.image = reader.result; // Store the base64 string or file URL
-                };
-
-                reader.readAsDataURL(file); // Start reading the file
-            }
-        },
         createNewUser() {
             return {
                 name: this.user.name || "Null", // Replace with dynamic value
                 address: this.user.address || "Null", // Replace with dynamic value
-                image: this.user.image || "Null", // Replace with dynamic value
             };
         },
         async submit() {
@@ -156,11 +132,6 @@ export default {
                 formData.append('phone', this.user.phone || 'Null');
                 formData.append('address', this.user.address || 'Null');
 
-                // Append the image file if it exists
-                if (this.user.image) {
-                    formData.append('image', this.user.image);
-                }
-
                 for (let [key, value] of formData.entries()) {
                     console.log(key, value);
                 }
@@ -183,6 +154,7 @@ export default {
                 console.error('Error adding user:', error);
                 alert('Failed to add user. Please try again.');
             }
+            window.location.href = '/shop/modifyUser';
         },
         clearForm() {
             this.user = {
@@ -192,7 +164,6 @@ export default {
                 password: "",
                 phone: "",
                 address: "",
-                image: "",
                 role: ""
             };
         },

@@ -37,6 +37,16 @@ const bookSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
+  isHidden: {
+    type: Boolean,
+    default: false
+  },
+  reviews: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Review'
+    }
+  ]
 })
 
 const Book = mongoose.model('Book', bookSchema);

@@ -45,9 +45,14 @@ const router = createRouter({
             {
               path: '/checkout',
               name: 'Checkout',
-              component: () => import('@/components/user/checkout.vue'),
+              component: () => import('@/components/user/genreBook.vue'),
             }
           ],
+        },
+        {
+          path: '/checkout',
+          name: 'Checkout',
+          component: () => import('@/components/user/checkout.vue'),
         },
         {
           path: 'genre/:genre',
@@ -86,7 +91,31 @@ const router = createRouter({
           name: 'ModifyAndDeleteUser',
           meta: { requiresAuth: true, roles: ['admin'] },
           component: () => import('@/components/shop/modifyUserComp.vue'),
-        }
+        },
+        {
+          path: 'orderManagement',
+          name: 'OrderManagement',
+          meta: { requiresAuth: true, roles: ['admin'] },
+          component: () => import('@/components/shop/orderManagementComp.vue'),
+        },
+        {
+          path: 'addCategory',
+          name: 'AddNewCategory',
+          meta: { requiresAuth: true, roles: ['admin'] },
+          component: () => import('@/components/shop/addCategoryComp.vue'),
+        },
+        {
+          path: 'modifyCategory',
+          name: 'ModifyAndDeleteCategory',
+          meta: { requiresAuth: true, roles: ['admin'] },
+          component: () => import('@/components/shop/modifyCategoryComp.vue'),
+        },
+        {
+          path: 'analytics',
+          name: 'Analytics',
+          meta: { requiresAuth: true, roles: ['admin'] },
+          component: () => import('@/components/shop/statisticComp.vue'),
+        },
       ],
     }    
   ],
@@ -94,18 +123,18 @@ const router = createRouter({
 
 
 router.beforeEach((to, from, next) => {
-  const isAuthenticated = store.getters.isAuthenticated;  
-  const userRole = store.getters.getRole; 
+  const isAuthenticated = store.getters.isAuthenticated;
+  const userRole = store.getters.getRole;
 
   if (to.meta.preventAuthenticated && isAuthenticated) {
     alert('You are already logged in');
-    next({ name: 'home' , query: { redirect: to.fullPath }});
+    next({ name: 'home', query: { redirect: to.fullPath } });
   } else if (to.meta.requiresAuth && !isAuthenticated) {
     next({ name: 'Login', query: { redirect: to.fullPath } });
   } else if (to.meta.roles && !to.meta.roles.includes(userRole)) {
     // If the route requires specific roles and the user doesn't have access
     alert('Access denied');
-    next({ name: 'Login', query: { redirect: to.fullPath } }); 
+    next({ name: 'Login', query: { redirect: to.fullPath } });
   } else {
     next(); // Allow access
   }
