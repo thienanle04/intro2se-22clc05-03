@@ -483,8 +483,8 @@ class UserController {
 
       for (let item of user.cart.items) {
         const cartItem = await CartItem.findById(item._id);
-        const book = await Book.findById(cartItem.book); // Assuming each cart item has a `bookId` reference
 
+        const book = await Book.findById(cartItem.book); // Assuming each cart item has a `bookId` reference
         if (book) {
           const genreId = book.genre;
           const genre = await Genre.findById(genreId);
@@ -523,11 +523,11 @@ class UserController {
   // [POST] /api/v1/users/{userId}/payment
   async payment(req, res) {
     const userId = req.params.userId;
-    const { name, email, phone, number, street, district, ward, city, cartItems } = req.body;
+    const { name, email, phone, number, street, district, ward, city, total} = req.body;
 
     try {
         // Validate the user existence
-        const user = await User.findById(userId);
+        const user = await User.findById(userId).populate('cart');
         if (!user) {
             return res.status(404).json({
                 data: null,
@@ -537,7 +537,7 @@ class UserController {
         }
 
         // Ensure cart items are present in the request
-        if (!cartItems || cartItems.length === 0) {
+        if (!user.cart.items || user.cart.items.length === 0) {
             return res.status(400).json({
                 data: null,
                 message: 'Cart is empty or not provided',
@@ -548,7 +548,7 @@ class UserController {
         // Create a new order with the provided details and cart items
         const newOrder = new Order({
             user: userId,
-            items: cartItems, // Directly use cartItems from the request body
+            items: user.cart.items, // Directly use cartItems from the request body
             details: {
                 name,
                 email,
@@ -558,7 +558,8 @@ class UserController {
                 district,
                 ward,
                 city
-            }
+            },
+            total: total
         });
 
         // Save the new order

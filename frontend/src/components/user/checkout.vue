@@ -126,7 +126,10 @@ export default {
     },
     methods: {
         checkout() {
-            this.$store.dispatch("checkout", this.checkoutDetails);
+            this.$store.dispatch("checkout", {
+                ...this.checkoutDetails,
+                total: this.totalPrice,
+            });
             this.$router.push("/");
         },
     },

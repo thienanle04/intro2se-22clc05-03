@@ -188,6 +188,7 @@ export default createStore({
   actions: {
     async checkout({ state, dispatch }, checkoutDetails) {
       try {
+        await dispatch("updateCart");
         const response = await fetch(
           `/api/v1/users/${state.userId}/payment`,
           {
@@ -198,7 +199,7 @@ export default createStore({
             },
             body: JSON.stringify({
               ...checkoutDetails,
-              cartItems: state.cartItems, // Include cart items from Vuex state
+              total: checkoutDetails.total, // Include cart items from Vuex state
             }),
           }
         );
