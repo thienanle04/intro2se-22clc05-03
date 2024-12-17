@@ -56,7 +56,7 @@ const userRouter = require('./router/userRouter.js');
 const authRouter = require('./router/authRouter.js');
 const bookRouter = require('./router/bookRouter.js');
 const genreRouter = require('./router/genreRouter.js');
-const orderRouter = require('./router/orderRouter.js')
+const orderRouter = require('./router/orderRouter.js');
 const swaggerDocs = require('./swagger.js');
 swaggerDocs(app, port);
 

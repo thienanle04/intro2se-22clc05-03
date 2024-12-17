@@ -110,6 +110,12 @@ const router = createRouter({
           meta: { requiresAuth: true, roles: ['admin'] },
           component: () => import('@/components/shop/modifyCategoryComp.vue'),
         },
+        {
+          path: 'analytics',
+          name: 'Analytics',
+          meta: { requiresAuth: true, roles: ['admin'] },
+          component: () => import('@/components/shop/statisticComp.vue'),
+        },
       ],
     }    
   ],
