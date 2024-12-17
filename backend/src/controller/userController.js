@@ -284,25 +284,35 @@ class UserController {
         await user.save();
       }
 
-      // Kiểm tra sản phẩm trong giỏ hàng
-      let cartItem = await CartItem.findOne({ book: book._id });
-      if (cartItem) {
-        // Nếu sản phẩm đã có trong giỏ, tăng số lượng
-        cartItem.quantity = quantity;
-        await cartItem.save();
-      } else {
-        // Nếu sản phẩm chưa có trong giỏ, thêm mới
-        const newCartItem = new CartItem({
-          book: book._id,
-          quantity: quantity
-        });
-        await newCartItem.save();
-
-        // Thêm mục giỏ hàng vào giỏ hàng của người dùng
-        const cart = await Cart.findById(user.cart);
-        cart.items.push(newCartItem);
-        await cart.save();
+      let cart = await Cart.findById(user.cart).populate('items');
+      for (let item of cart.items) {
+        let cartItem = await CartItem.findById(item._id);
+        if (cartItem.book.toString() === book._id) {
+          if (book.stock < quantity) {
+            return res.status(400).json({
+              data: null,
+              message: 'Not enough stock',
+              code: 0
+            });
+          }
+          cartItem.quantity = quantity;
+          await cartItem.save();
+          return res.status(200).json({
+            data: user.cart,
+            message: 'Added to cart successfully',
+            code: 1
+          });
+        }
       }
+
+      // Tạo một cartItem mới
+      const newCartItem = new CartItem({
+        book: book._id,
+        quantity
+      });
+      await newCartItem.save();
+      cart.items.push(newCartItem._id);
+      await cart.save();
 
       // Trả về kết quả thành công
       res.status(200).json({
