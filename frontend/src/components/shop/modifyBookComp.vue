@@ -29,7 +29,7 @@
             </div>
             <div class="col-7">
                 <select class="form-control" v-model="genre" aria-label="Genre">
-                    <option value="" disabled selected>Select genre</option>
+                    <option value="">All</option>
                     <!-- Lặp qua genres để tạo các option -->
                     <option v-for="(genreOption, index) in genres" :key="index" :value="genreOption">
                         {{ genreOption.name }}
@@ -191,17 +191,11 @@ export default {
         };
     },
     watch: {
-        isbn() {
-            this.searchBooks();
-        },
-        bookTitle() {
-            this.searchBooks();
-        },
-        genre(){
-            console.log('check');
-            this.searchBooks();
-        }
+        isbn: "searchBooks",
+        bookTitle: "searchBooks",
+        genre: "searchBooks"
     },
+
     async created() {
         const res = await fetch(`http://localhost:8081/api/v1/books`);
         const data = await res.json();
@@ -238,10 +232,13 @@ export default {
                 return []; // Return an empty array in case of an error
             }
         },
-        async getAllBooks(genre) {
-            console.log('genre', genre);
+        async getAllBooks(genre = '') {
             try {
-                const response = await fetch(`http://localhost:8081/api/v1/books/search/${genre}`); // Perform GET request
+                const url = genre ? 
+                    `http://localhost:8081/api/v1/books/search/${genre}` : 
+                    `http://localhost:8081/api/v1/books`;
+
+                const response = await fetch(url); // Perform GET request
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
@@ -253,22 +250,27 @@ export default {
             }
         },
 
+
+
         async searchBooks() {
-            if (!this.isbn && !this.bookTitle) {
-                this.booksToModify = await this.getAllBooks(this.genre.name);
-                return;
+            try {
+                // Gọi API lấy danh sách sách
+                const allBooks = await this.getAllBooks(this.genre?.name || '');
+
+                // Lọc sách dựa trên các tiêu chí tìm kiếm
+                this.booksToModify = allBooks.filter(book => {
+                    const matchesIsbn = this.isbn ? book.SBN.includes(this.isbn) : true;
+                    const matchesTitle = this.bookTitle
+                        ? book.title.toLowerCase().includes(this.bookTitle.toLowerCase())
+                        : true;
+                    return matchesIsbn && matchesTitle;
+                });
+            } catch (error) {
+                console.error('Failed to search books:', error.message);
+                this.booksToModify = [];
             }
-
-            const allBooks = await this.getAllBooks(this.genre.name); // Use the `getAllBooks` method
-
-            this.booksToModify = allBooks.filter(book => {
-                const matchesIsbn = this.isbn ? book.SBN.includes(this.isbn) : true;
-                const matchesTitle = this.bookTitle
-                    ? book.title.toLowerCase().includes(this.bookTitle.toLowerCase())
-                    : true;
-                return matchesIsbn && matchesTitle;
-            });
         },
+
 
         selectBook(book) {
             this.selectedBook = book;
