@@ -50,7 +50,12 @@ router
     Authentication.reCheckUser, 
     userController.getCart
   );
-
+  // [GET] /api/v1/users/cart/item/:itemId
+router
+  .route('/cart/item/:itemId/')
+  .get(
+    userController.getCartItemById
+  );
 // [POST] /api/v1/users/{userId}/addCart
 router
   .route('/:userId/addCart')
@@ -82,6 +87,7 @@ router
     // Authentication.reCheckUser, 
     userController.payment
   );
+
 
 
 module.exports = router;

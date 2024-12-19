@@ -59,6 +59,14 @@ const router = createRouter({
           name: 'GenreBooks',
           component: () => import('@/components/user/genreBook.vue'),
         },
+        {
+          path: '/myOrders',
+          name: 'MyOrders',
+          component: () => import('@/components/user/MyOrders.vue'),
+          meta: { requiresAuth: true}
+
+
+        },
       ],
     },
     {

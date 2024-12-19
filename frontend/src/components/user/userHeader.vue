@@ -35,9 +35,9 @@
                         <i class="bi bi-cart3 fs-4"></i>
                     </RouterLink>
                     <span class="text-dark me-3">|</span>
-                    <a href="#" class="text-dark">
+                    <RouterLink to="/myOrders" class="text-dark">
                         <i class="bi bi-person fs-4"></i>
-                    </a>
+                    </RouterLink>
                 </div>
             </div>
 

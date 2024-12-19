@@ -3,6 +3,7 @@ import Swal from 'sweetalert2';
 
 export default createStore({
   state: {
+    orders: [],
     isAuthenticated: false,
     authToken: null,
     userId: null,
@@ -10,6 +11,9 @@ export default createStore({
     cartItems: [],
   },
   mutations: {
+    setOrders(state, orders) {
+      state.orders = orders; // Update orders in the state
+    },
     setAuthentication(state, { authToken, role, userId }) {
       state.isAuthenticated = true;
       state.authToken = authToken;
@@ -293,7 +297,30 @@ export default createStore({
     },
     fetchCart({ commit }) {
       commit('fetchCart');
-    }
+    },
+    async fetchOrders({ commit, state }) {
+      const token = localStorage.getItem('token'); // Retrieve token from localStorage or any secure storage
+      try {
+        const response = await fetch('http://localhost:8081/api/v1/orders/myOrders', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`, // Include the token
+          },
+        });
+
+        if (!response.ok) {
+          const errorResponse = await response.json();
+          throw new Error(errorResponse.message || `HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json(); // Parse JSON response
+        commit('setOrders', data.data.orders); // Commit the orders to Vuex state
+      } catch (error) {
+        console.error('Failed to fetch orders:', error.message);
+        commit('setOrders', []); // Commit an empty array in case of an error
+      }
+    },
   },
   getters: {
     isAuthenticated: (state) => state.isAuthenticated,
@@ -302,5 +329,6 @@ export default createStore({
     getUserId: (state) => state.userId,
     getCartItems: (state) => state.cartItems,
     countCartItems: (state) => state.cartItems.length,
+    getOrders: (state) => state.orders,
   },
 });

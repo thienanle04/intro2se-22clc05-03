@@ -461,7 +461,36 @@ class UserController {
       });
     }
   }
+  // [GET] /api/v1/cart/item/:itemId
+  async getCartItemById(req, res) {
+    try {
+      const itemId = req.params.itemId; // Get the itemId from the URL
 
+      // Find the cart item by ID
+      const cartItem = await CartItem.findById(itemId);
+
+      if (!cartItem) {
+        return res.status(404).json({
+          data: null,
+          message: 'Cart item not found',
+          code: 0
+        });
+      }
+
+      // Return the cart item details
+      res.status(200).json({
+        data: cartItem,
+        message: 'Cart item fetched successfully',
+        code: 1
+      });
+    } catch (error) {
+      res.status(500).json({
+        data: null,
+        message: `Error fetching cart item: ${error.message}`,
+        code: 0
+      });
+    }
+}
   // [GET] /api/v1/user/:userId/getCart
   async getCart(req, res) {
     const userId = req.user.id;  // Assuming `req.user.id` holds the authenticated user's ID
