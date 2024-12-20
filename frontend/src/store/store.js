@@ -1,6 +1,8 @@
 import { createStore } from 'vuex';
 import Swal from 'sweetalert2';
 
+const guestUserId = "12123124123124"
+
 export default createStore({
   state: {
     orders: [],
@@ -192,21 +194,41 @@ export default createStore({
   actions: {
     async checkout({ state, dispatch }, checkoutDetails) {
       try {
+        console.log('state: ', state);
         await dispatch("updateCart");
-        const response = await fetch(
-          `/api/v1/users/${state.userId}/payment`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${state.authToken}`,
-            },
-            body: JSON.stringify({
-              ...checkoutDetails,
-              total: checkoutDetails.total, // Include cart items from Vuex state
-            }),
-          }
-        );
+        let response;
+        if (state.isAuthenticated) {
+          response = await fetch(
+            `/api/v1/users/${state.userId}/payment`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${state.authToken}`,
+              },
+              body: JSON.stringify({
+                ...checkoutDetails,
+                total: checkoutDetails.total, // Include cart items from Vuex state
+              }),
+            }
+          );
+        } else {
+          response = await fetch(
+            `/api/v1/users/${guestUserId}/payment`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${state.authToken}`,
+              },
+              body: JSON.stringify({
+                ...checkoutDetails,
+                total: checkoutDetails.total,
+                items: state.cartItems,
+              }),
+            }
+          );
+        }
 
         const result = await response.json();
         if (result.code === 1) {

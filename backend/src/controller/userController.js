@@ -561,73 +561,99 @@ class UserController {
 
   // [POST] /api/v1/users/{userId}/payment
   async payment(req, res) {
-    const userId = req.params.userId;
-    const { name, email, phone, number, street, district, ward, city, total} = req.body;
-
-    try {
-        // Validate the user existence
-        const user = await User.findById(userId).populate('cart');
-        if (!user) {
-            return res.status(404).json({
-                data: null,
-                message: 'User not found',
-                code: 0
-            });
-        }
-
-        // Ensure cart items are present in the request
-        if (!user.cart.items || user.cart.items.length === 0) {
-            return res.status(400).json({
-                data: null,
-                message: 'Cart is empty or not provided',
-                code: 0
-            });
-        }
-
-        // Create a new order with the provided details and cart items
-        const newOrder = new Order({
-            user: userId,
-            items: user.cart.items, // Directly use cartItems from the request body
-            details: {
-                name,
-                email,
-                phone,
-                number,
-                street,
-                district,
-                ward,
-                city
-            },
-            total: total
-        });
-
-        // Save the new order
-        await newOrder.save();
-        user.order.push(newOrder._id);
-        
-        // Clear the user's cart
-        const cart = await Cart.findById(user.cart);
-        cart.items = [];
-        user.cart = null;
-        // Save the updated user and cart
-        await cart.save();
-        await user.save();
-
-        res.status(200).json({
-          data: newOrder,
-          message: 'Payment successfully',
-          code: 1
-        });
+    const { userId } = req.params;
+    const { name, email, phone, number, street, district, ward, city, total, items } = req.body;
     
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({
-            data: null,
-            message: `Error payment: ${error.message}`,
-            code: 0
-        });
+    // Kiểm tra điều kiện đặc biệt cho userId
+    if (userId === '12123124123124') {
+        try {
+            // Xử lý cho trường hợp không phải người dùng thực
+            const cartItemLists = await Promise.all(items.map(async (item) => {
+                const cartItem = new CartItem({
+                    book: item._id,
+                    quantity: item.quantity
+                });
+                await cartItem.save();
+                return cartItem._id;
+            }));
+
+            // Tạo đơn hàng mới
+            const newOrder = new Order({
+                items: cartItemLists,
+                details: { name, email, phone, number, street, district, ward, city },
+                total
+            });
+            await newOrder.save();
+
+            return res.status(200).json({
+                data: newOrder,
+                message: 'Payment successfully',
+                code: 1
+            });
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({
+                data: null,
+                message: `Error during special payment process: ${error.message}`,
+                code: 0
+            });
+        }
+    } else {
+        try {
+            // Xử lý cho người dùng thực sự
+            const user = await User.findById(userId).populate('cart');
+            if (!user) {
+                return res.status(404).json({
+                    data: null,
+                    message: 'User not found',
+                    code: 0
+                });
+            }
+
+            // Kiểm tra giỏ hàng của người dùng
+            if (!user.cart || !user.cart.items || user.cart.items.length === 0) {
+                return res.status(400).json({
+                    data: null,
+                    message: 'Cart is empty or not provided',
+                    code: 0
+                });
+            }
+
+            // Tạo đơn hàng mới từ giỏ hàng
+            const newOrder = new Order({
+                user: userId,
+                items: user.cart.items.map(item => item._id), // Chỉ lấy ID của các item
+                details: { name, email, phone, number, street, district, ward, city },
+                total
+            });
+
+            // Lưu đơn hàng và cập nhật người dùng
+            await newOrder.save();
+            user.order.push(newOrder._id);
+
+            // Làm trống giỏ hàng và cập nhật lại
+            const cart = await Cart.findByIdAndUpdate(user.cart, { $set: { items: [] } });
+            user.cart = null;
+
+            await user.save();
+
+            return res.status(200).json({
+                data: newOrder,
+                message: 'Payment successfully',
+                code: 1
+            });
+
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({
+                data: null,
+                message: `Error during payment process: ${error.message}`,
+                code: 0
+            });
+        }
     }
-  }
+}
+
 
   // [POST] /api/v1/users/create: create user, only admin can access
   async createUser(req, res){

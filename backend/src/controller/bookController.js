@@ -107,6 +107,7 @@ class BookController {
   // [GET] /api/v1/books/bookId: get book by bookId
   async getBookById(req, res) {
     try {
+      console.log(req.params.bookId)
       const book = await Book.findById(req.params.bookId);
       if (!book) {
         return res.status(404).json({

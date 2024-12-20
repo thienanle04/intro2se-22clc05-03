@@ -22,7 +22,8 @@
           <td>{{ order.details.phone }}</td>
 
           <td>
-            {{ order.details.number }},{{ order.details.street }}, {{ order.details.ward }}, {{ order.details.district }}, {{ order.details.city }}
+            {{ order.details.number }},{{ order.details.street }}, {{ order.details.ward }}, {{ order.details.district
+            }}, {{ order.details.city }}
           </td>
           <td>
             <!-- Display product names -->
@@ -47,70 +48,73 @@ export default {
     };
   },
   methods: {
-async fetchOrders() {
-  const token = this.$store.state.authToken; // Retrieve token from your store
+    async fetchOrders() {
+      const token = this.$store.state.authToken; // Retrieve token from your store
 
-  try {
-    const response = await fetch('http://localhost:8081/api/v1/orders/myOrders', {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Cache-Control': 'no-cache', // Prevent caching
-        Authorization: `Bearer ${token}`, // Include the token
-      },
-    });
+      try {
+        const response = await fetch('http://localhost:8081/api/v1/orders/myOrders', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Cache-Control': 'no-cache', // Prevent caching
+            Authorization: `Bearer ${token}`, // Include the token
+          },
+        });
 
-    if (!response.ok) {
-      const errorResponse = await response.json();
-      throw new Error(errorResponse.message || `HTTP error! status: ${response.status}`);
-    }
-
-    const data = await response.json(); // Parse JSON response
-
-    // Fetch book details for each order item
-    const ordersWithBooks = await Promise.all(data.data.orders.map(async (order) => {
-      const itemsWithDetails = await Promise.all(order.items.map(async (item) => {
-        try {
-          // Fetch cart item details
-          const cartItemResponse = await fetch(`http://localhost:8081/api/v1/users/cart/item/${item._id}`);
-          const cartItemData = await cartItemResponse.json();
-
-          if (cartItemData.data) {
-            item.quantity = cartItemData.data.quantity;
-
-            // Fetch book details using the bookId from the cartItem
-            const bookResponse = await fetch(`http://localhost:8081/api/v1/books/${cartItemData.data.book}`);
-            const bookData = await bookResponse.json();
-
-            if (bookData.data && bookData.data.book) {
-              item.bookName = bookData.data.book.title; // Assign book title to item
-            } else {
-              item.bookName = 'Unknown Book'; // Fallback if book not found
-            }
-          } else {
-            item.bookName = 'Unknown Book'; // Fallback if cart item not found
-            item.quantity = 0;
-          }
-        } catch (error) {
-          console.error(`Error fetching book for cart item ${item._id}:`, error.message);
-          item.name = 'Error Fetching Book'; // Fallback in case of an error
-          item.quantity = 0;
+        if (!response.ok) {
+          const errorResponse = await response.json();
+          throw new Error(errorResponse.message || `HTTP error! status: ${response.status}`);
         }
 
-        return item;
-      }));
+        const data = await response.json(); // Parse JSON response
+        console.log('Orders:', data.data);
 
-      return { ...order, items: itemsWithDetails };
-    }));
+        // Fetch book details for each order item
+        const ordersWithBooks = await Promise.all(data.data.orders.map(async (order) => {
+          const itemsWithDetails = await Promise.all(order.items.map(async (item) => {
+            console.log('Fetching book for cart item:', item);
+            try {
+              // Fetch cart item details
+              const cartItemResponse = await fetch(`http://localhost:8081/api/v1/users/cart/item/${item._id}`);
 
-    // Update the orders array with books information
-    this.orders = ordersWithBooks;
+              const cartItemData = await cartItemResponse.json();
+              console.log('Cart item data:', cartItemData);
+              if (cartItemData.data) {
+                item.quantity = cartItemData.data.quantity;
 
-  } catch (error) {
-    console.error('Failed to fetch orders:', error.message);
-    this.orders = []; // Ensure orders are always an array
-  }
-},
+                // Fetch book details using the bookId from the cartItem
+                const bookResponse = await fetch(`http://localhost:8081/api/v1/books/${cartItemData.data.book}`);
+                const bookData = await bookResponse.json();
+
+                if (bookData.data && bookData.data.book) {
+                  item.bookName = bookData.data.book.title; // Assign book title to item
+                } else {
+                  item.bookName = 'Unknown Book'; // Fallback if book not found
+                }
+              } else {
+                item.bookName = 'Unknown Book'; // Fallback if cart item not found
+                item.quantity = 0;
+              }
+            } catch (error) {
+              console.error(`Error fetching book for cart item ${item._id}:`, error.message);
+              item.name = 'Error Fetching Book'; // Fallback in case of an error
+              item.quantity = 0;
+            }
+
+            return item;
+          }));
+
+          return { ...order, items: itemsWithDetails };
+        }));
+
+        // Update the orders array with books information
+        this.orders = ordersWithBooks;
+
+      } catch (error) {
+        console.error('Failed to fetch orders:', error.message);
+        this.orders = []; // Ensure orders are always an array
+      }
+    },
 
 
     formatToUTC7(date) {

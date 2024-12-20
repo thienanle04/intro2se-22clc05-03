@@ -4,6 +4,7 @@ class OrderController {
     async getAllOrders(req, res) {
         try {
             const orders = await Order.find();
+            console.log(orders);
             res.status(200).json({
                 data: {
                     orders,
