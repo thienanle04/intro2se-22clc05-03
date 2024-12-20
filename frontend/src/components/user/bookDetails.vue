@@ -43,6 +43,50 @@
             </div>
         </div>
 
+        <!-- Review Submission -->
+        <div v-if="isAuthenticated" class="mt-4">
+            <h5>Write a Review</h5>
+            <textarea v-model="newReview.content" placeholder="Write your review..." class="form-control" rows="3"></textarea>
+            <div class="rating mt-2">
+            <label>Rating: </label>
+            <input type="number" v-model="newReview.rating" min="1" max="5" class="form-control d-inline-block w-auto" />
+            </div>
+            <button @click="submitReview" class="btn btn-primary mt-3">Submit Review</button>
+        </div>
+
+        <!-- If not authenticated -->
+        <div v-else class="mt-4">
+            <p>You must be logged in to write a review.</p>
+            <button @click="redirectToLogin" class="btn btn-warning">Login</button>
+        </div>
+        
+        <!-- Reviews Section -->
+        <div v-if="book && book.reviews && book.reviews.length" class="reviews-section mt-4">
+            <!-- Reviews Header -->
+            <h4 class="text-center">Reviews</h4>
+            
+            <!-- Reviews List with Pagination -->
+            <div class="reviews-container" style="background-color: #f9f9f9; padding: 20px; border-radius: 8px; border: 1px solid #ddd;">
+                <div v-for="(review, index) in paginatedReviews" :key="index" class="review-item mb-4">
+                    <div class="d-flex align-items-center">
+                        <img :src="review.avatar" alt="User Avatar" class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;" />
+                        <div class="ms-3">
+                            <strong>{{ review.user }}</strong>
+                            <p>{{ review.content }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pagination Controls -->
+            <div class="pagination-container d-flex justify-content-center mt-4">
+                <button @click="changePage(currentPage - 1)" :disabled="currentPage === 1" class="btn btn-light me-2">Previous</button>
+                <span>Page {{ currentPage }} of {{ totalPages }}</span>
+                <button @click="changePage(currentPage + 1)" :disabled="currentPage === totalPages" class="btn btn-light ms-2">Next</button>
+            </div>
+        </div>
+
+
         <div class="row justify-content-center">
             <div class="col-md-11">
                 <div class="position-relative mb-3">
@@ -111,13 +155,36 @@
 
 
 <script>
+import Swal from 'sweetalert2';
+
 export default {
     name: 'BookDetails',
     data() {
         return {
             book: null, // Holds the fetched book details
             relativeBook: {},
+            currentPage: 1, // Current page of reviews
+            reviewsPerPage: 5, // Number of reviews per page
+            newReview: {
+                rating: null,
+                content: '',
+            },
         };
+    },
+    computed: {
+        totalPages() {
+            // Calculate total pages based on the number of reviews
+            return Math.ceil(this.book.reviews.length / this.reviewsPerPage);
+        },
+        paginatedReviews() {
+            // Slice the reviews array to get the reviews for the current page
+            const start = (this.currentPage - 1) * this.reviewsPerPage;
+            const end = start + this.reviewsPerPage;
+            return this.book.reviews.slice(start, end);
+        },
+        isAuthenticated() {
+        return this.$store.getters.isAuthenticated;
+        },
     },
     methods: {
         /**
@@ -134,6 +201,11 @@ export default {
             return result;
         },
 
+          changePage(page) {
+            if (page >= 1 && page <= this.totalPages) {
+                this.currentPage = page;
+            }
+        },
         /**
          * Fetches the book details based on the route parameter (ID).
          */
@@ -154,6 +226,66 @@ export default {
             }
         },
 
+        async submitReview() {
+            if (!this.isAuthenticated) {
+            Swal.fire({
+                title: "Login Required",
+                text: "You must be logged in to submit a review.",
+                icon: "warning",
+            });
+            return;
+            }
+            const reviewData = {
+                rating: this.newReview.rating,
+                comment: this.newReview.content, 
+            };
+
+
+            try {
+             const bookId = this.$route.params.id;
+            const response = await fetch(`/api/v1/books/${bookId}/review`, {
+                method: 'POST',
+                headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${this.$store.getters.getAuthToken}`,
+                },
+                body: JSON.stringify(reviewData),
+            });
+
+            const data = await response.json();
+
+            if (data.code === 1) {
+                Swal.fire({
+                title: "Review Submitted",
+                text: data.message,
+                icon: "success",
+                });
+                this.newReview.comment = '';  // Clear the comment input
+                this.newReview.rating = 5;    // Reset the rating
+                this.fetchBookDetails();     // Refresh book details to show the new review
+            } else {
+                Swal.fire({
+                title: "Error",
+                text: data.message || "Failed to submit your review. Please try again.",
+                icon: "error",
+                });
+            }
+            } catch (error) {
+            Swal.fire({
+                title: "Error",
+                text: `An error occurred while submitting your review: ${error.message}`,
+                icon: "error",
+            });
+            }
+        },
+        redirectToLogin() {
+            this.$router.push('/login'); // Redirect to the login page
+        },
+         isUserLoggedIn() {
+            // Check if the user is logged in by checking for a token or using Vuex state
+            // Assuming the JWT token is stored in localStorage
+            return !!localStorage.getItem('authToken'); // or use Vuex if needed
+        },
         /**
          * Fetches the book details based on the route parameter (ID).
          */
@@ -181,12 +313,19 @@ export default {
          * @returns {string} A string representing stars (e.g., ★★★★☆).
          */
         displayStars(rating) {
+            // Ensure rating is a number and falls within the 0 to 5 range
+            if (isNaN(rating) || rating < 0 || rating > 5) {
+                return '☆☆☆☆☆'; // Or return a default star string like '☆☆☆☆☆'
+            }
+
             const fullStars = Math.floor(rating); // Number of full stars
             const halfStar = rating % 1 >= 0.5 ? '★' : ''; // Check for a half-star
             const emptyStars = 5 - fullStars - (halfStar ? 1 : 0); // Remaining empty stars
 
-            return '★'.repeat(fullStars) + halfStar + '☆'.repeat(emptyStars);
+            // Ensure no negative or NaN values are passed to repeat()
+            return '★'.repeat(Math.max(0, fullStars)) + halfStar + '☆'.repeat(Math.max(0, emptyStars));
         },
+
 
         /**
          * Navigates to the Book Details page with the given ID.
