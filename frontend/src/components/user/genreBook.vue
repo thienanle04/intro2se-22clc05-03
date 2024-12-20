@@ -4,7 +4,7 @@
         <h3>Category: {{ this.$route.params.genre }}</h3>
 
         <!-- Display Books -->
-        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-6 g-4 mx-5">
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 g-4 mx-5">
             <div v-for="book in books" :key="book.id" class="col-md-3 mb-4">
                 <div class="card text-center mx-auto" style="width: 200px;">
                     <!-- Image -->
