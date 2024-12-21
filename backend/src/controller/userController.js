@@ -622,7 +622,7 @@ class UserController {
             // Tạo đơn hàng mới từ giỏ hàng
             const newOrder = new Order({
                 user: userId,
-                items: user.cart.items.map(item => item._id), // Chỉ lấy ID của các item
+                items: user.cart.items, // Chỉ lấy ID của các item
                 details: { name, email, phone, number, street, district, ward, city },
                 total
             });
@@ -631,10 +631,12 @@ class UserController {
             await newOrder.save();
             user.order.push(newOrder._id);
 
-            // Làm trống giỏ hàng và cập nhật lại
-            const cart = await Cart.findByIdAndUpdate(user.cart, { $set: { items: [] } });
+            // Clear the user's cart
+            const cart = await Cart.findById(user.cart);
+            cart.items = [];
             user.cart = null;
-
+            // Save the updated user and cart
+            await cart.save();
             await user.save();
 
             return res.status(200).json({
