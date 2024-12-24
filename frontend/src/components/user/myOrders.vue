@@ -8,8 +8,8 @@
           <th>Order Date (UTC+7)</th>
           <th>Status</th>
           <th>Total (VND)</th>
-          <th>Address</th>
           <th>Phone number</th>
+          <th>Address</th>
           <th>Products</th> <!-- New column for products -->
         </tr>
       </thead>

@@ -319,7 +319,7 @@ export default {
                     throw new Error(`Failed to delete book: ${response.statusText}`);
                 }
 
-                alert(`Book "${this.selectedBook.Title}" has been deleted.`);
+                alert(`Book "${this.selectedBook.title}" has been deleted.`);
 
                 // Optionally, remove the book from the UI list after deletion
                 this.booksToModify = this.booksToModify.filter(book => book._id !== this.selectedBook._id);
@@ -334,6 +334,12 @@ export default {
         },
         async updateBook(updatedBook, token) {
             try {
+                // Check if stock is a valid number (integer >= 0)
+                if (!Number.isInteger(updatedBook.stock) || updatedBook.stock < 0) {
+                    alert('Stock must be a non-negative integer.');
+                    return;
+                }
+
                 const formData = new FormData();
 
                 // Thêm các thuộc tính từ `updatedBook` vào formData
@@ -366,7 +372,8 @@ export default {
                     this.searchBooks(); // Refresh the list of books
                 } else {
                     console.error('Failed to update book:', response.statusText);
-                    alert('Failed to update the book. Please try again.');
+                    const data = await response.json();
+                    alert(`Failed to update book: ${data.message}`);
                 }
             } catch (error) {
                 console.error('Error updating book:', error);

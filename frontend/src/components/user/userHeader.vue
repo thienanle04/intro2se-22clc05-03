@@ -36,41 +36,42 @@
                     </RouterLink>
                     <span class="text-dark me-3">|</span>
                     <RouterLink to="/myOrders" class="text-dark">
-                        <i class="bi bi-person fs-4"></i>
+                        <i class="bi bi-clock-history fs-4"></i>
+
                     </RouterLink>
                 </div>
             </div>
 
             <!-- Categories (Responsive) -->
-                <div class="row w-100 justify-content-center categories">
-                    <button class="btn btn-outline-secondary rounded-pill mx-2 mb-2 category-button"
-                        @click="performGenre('Fantasy')">
-                        <i class="bi bi-book-half me-1"></i> Fantasy
-                    </button>
-                    <button class="btn btn-outline-secondary rounded-pill mx-2 mb-2 category-button"
-                        @click="performGenre('Adventure')">
-                        <i class="bi bi-geo me-1"></i> Adventure
-                    </button>
-                    <button class="btn btn-outline-secondary rounded-pill mx-2 mb-2 category-button"
-                        @click="performGenre('Classic')">
-                        <i class="bi bi-journal-richtext me-1"></i> Classic
-                    </button>
-                    <button class="btn btn-outline-secondary rounded-pill mx-2 mb-2 category-button"
-                        @click="performGenre('Romance')">
-                        <i class="bi bi-heart me-1"></i> Romance
-                    </button>
-                    <button class="btn btn-outline-secondary rounded-pill mx-2 mb-2 category-button"
-                        @click="performGenre('Dystopian')">
-                        <i class="bi bi-exclamation-circle me-1"></i> Dystopian
-                    </button>
-                    <button class="btn btn-outline-secondary rounded-pill mx-2 mb-2 category-button"
-                        @click="performGenre('ComingOfAge')">
-                        <i class="bi bi-person-fill me-1"></i> ComingOfAge
-                    </button>
-                    <button class="btn btn-danger rounded-pill mx-2 mb-2 category-button" @click="performGenre('All')">
-                        View All
-                    </button>
-                </div>
+            <div class="row w-100 justify-content-center categories">
+                <button class="btn btn-outline-secondary rounded-pill mx-2 mb-2 category-button"
+                    @click="performGenre('Fantasy')">
+                    <i class="bi bi-book-half me-1"></i> Fantasy
+                </button>
+                <button class="btn btn-outline-secondary rounded-pill mx-2 mb-2 category-button"
+                    @click="performGenre('Adventure')">
+                    <i class="bi bi-geo me-1"></i> Adventure
+                </button>
+                <button class="btn btn-outline-secondary rounded-pill mx-2 mb-2 category-button"
+                    @click="performGenre('Classic')">
+                    <i class="bi bi-journal-richtext me-1"></i> Classic
+                </button>
+                <button class="btn btn-outline-secondary rounded-pill mx-2 mb-2 category-button"
+                    @click="performGenre('Romance')">
+                    <i class="bi bi-heart me-1"></i> Romance
+                </button>
+                <button class="btn btn-outline-secondary rounded-pill mx-2 mb-2 category-button"
+                    @click="performGenre('Dystopian')">
+                    <i class="bi bi-exclamation-circle me-1"></i> Dystopian
+                </button>
+                <button class="btn btn-outline-secondary rounded-pill mx-2 mb-2 category-button"
+                    @click="performGenre('ComingOfAge')">
+                    <i class="bi bi-person-fill me-1"></i> ComingOfAge
+                </button>
+                <button class="btn btn-danger rounded-pill mx-2 mb-2 category-button" @click="performGenre('All')">
+                    View All
+                </button>
+            </div>
         </div>
     </nav>
 </template>

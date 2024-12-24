@@ -44,7 +44,7 @@ export default {
                 const monthlyRevenue = orders.reduce((acc, order) => {
                     const createdAt = new Date(order.createdAt); // Chuyển `createdAt` thành kiểu Date
                     if (!isNaN(createdAt.getTime())) { // Kiểm tra ngày hợp lệ
-                        const month = createdAt.getMonth() + 1; // Lấy tháng (1-12)
+                        const month = createdAt.getMonth(); // Lấy tháng (1-12)
                         const total = order.total || 0; // Mặc định doanh thu là 0 nếu `total` không hợp lệ
                         acc[month] = (acc[month] || 0) + total; // Tính tổng doanh thu theo tháng
                     }
