@@ -574,7 +574,7 @@ class UserController {
                     quantity: item.quantity
                 });
                 await cartItem.save();
-                return cartItem._id;
+                return { _id: cartItem._id };
             }));
 
             // Tạo đơn hàng mới

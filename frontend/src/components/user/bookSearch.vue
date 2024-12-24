@@ -92,7 +92,7 @@ export default {
             genres: ['Fantasy', 'Adventure', 'Classic', 'Romance', 'Dystopian', 'ComingOfAge'],
             filteredResults: [],
             currentPage: 1,
-            itemsPerPage: 12,
+            itemsPerPage: 10,
             totalPages: 1
         };
     },
