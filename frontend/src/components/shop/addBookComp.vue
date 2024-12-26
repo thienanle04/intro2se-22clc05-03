@@ -116,6 +116,18 @@ export default {
         },
         async submit() {
             try {
+                if (!this.book.title || !this.book.author || !this.book.genre || !this.book.SBN) {
+                    throw new Error('Please fill in all the required fields: Title, Author, Genre, and SBN.');
+                }
+
+                if (this.book.price <= 0 || this.book.stock <= 0 || this.book.rating < 0 || this.book.rating > 5) {
+                    throw new Error('Please enter valid values for Price, Stock, or Rating.\nPrice and Stock should be greater than 0.\nRating should be between 0 and 5.');
+                }
+
+                if (!Number.isInteger(this.book.stock)) {
+                    throw new Error('Stock must be an integer.');
+                }
+
                 const token = this.getAuthToken(); // Retrieve the authentication token
                 const bookData = this.createNewBook(); // Use the book object directly
 
@@ -129,15 +141,16 @@ export default {
                 });
 
                 if (!response.ok) {
-                    throw new Error(`Failed to add book: ${response.statusText}`);
+                    const data = await response.json();
+                    throw new Error(`${data.message || 'Failed to add book'}`);
                 }
 
                 const data = await response.json();
-                alert(`Book "${data.title}" has been successfully added.`);
+                alert(`Book "${data.book.title}" has been successfully added.`);
                 this.clearForm();
             } catch (error) {
                 console.error('Error adding book:', error);
-                alert('Failed to add book. Please try again.');
+                alert(error);
             }
         },
         clearForm() {

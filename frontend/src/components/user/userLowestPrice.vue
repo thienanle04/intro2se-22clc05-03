@@ -3,8 +3,6 @@
         <div class="col-md-11">
             <div class="position-relative mb-3">
                 <h4 class="text-center mb-0">Lowest Price</h4>
-
-                <a href="#" class="text-danger small position-absolute" style="top: 20px; right: 0;">View All</a>
             </div>
             <div>
                 <div id="lowestPriceCarousel" class="carousel carousel-dark slide" data-bs-ride="carousel">

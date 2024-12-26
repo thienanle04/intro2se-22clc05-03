@@ -56,10 +56,12 @@ class BookController {
           book.image = req.file.path;
         }
         
+        const bookFound = await Book.findOne({
+          $or: [{ title, author }, { SBN }]
+        });
 
-        const bookFound = await Book.findOne({ title, author });
         if (bookFound) {
-          return res.status(500).json({
+          return res.status(400).json({
             data: null,
             message: 'Book already exists',
             code: 0
@@ -161,6 +163,7 @@ class BookController {
       SBN,
       description,
       price,
+      rating,
       stock,
     } = req.body;
 
@@ -193,7 +196,23 @@ class BookController {
       if (SBN) book.SBN = SBN;
       if (description) book.description = description;
       if (price) book.price = price;
+      if (rating) book.rating = rating;
       if (stock) book.stock = stock;
+
+      // Check if book already exists
+      const bookFound = await Book.findOne({
+        $or: [{ title, author }, { SBN }],
+        _id: { $ne: bookId }
+      });
+
+      if (bookFound) {
+        return res.status(400).json({
+          data: null,
+          message: 'Duplicate SBN or title along with author',
+          code: 0
+        });
+      }
+
       if(req.file){
         book.image = req.file.path
       }
@@ -323,9 +342,14 @@ class BookController {
         });
       }
       const books = await Book.find({ genre: genreFound._id });
+      const booksWithGenreNames = books.map((book) => ({
+        ...book.toObject(),
+        genre: genreFound.name
+      }));
+
       res.status(200).json({
         data: {
-          books,
+          books: booksWithGenreNames,
         },
         message: 'Get book by genre successfully',
         code: 1

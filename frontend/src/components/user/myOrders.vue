@@ -7,7 +7,7 @@
 
           <th>Order Date (UTC+7)</th>
           <th>Status</th>
-          <th>Total (VND)</th>
+          <th>Total (USD)</th>
           <th>Phone number</th>
           <th>Address</th>
           <th>Products</th> <!-- New column for products -->
@@ -131,7 +131,7 @@ export default {
       });
     },
     formatCurrency(amount) {
-      return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
+      return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
     },
   },
   mounted() {

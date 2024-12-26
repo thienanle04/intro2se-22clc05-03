@@ -75,7 +75,7 @@
                         <th>Customer Name</th>
                         <th>Order Date (UTC+7)</th>
                         <th>Status</th>
-                        <th>Total Amount (VND)</th>
+                        <th>Total Amount (USD)</th>
                         <th>Address</th>
                         <th>Actions</th>
                     </tr>

@@ -13,7 +13,7 @@ class AuthController {
       if (!user) {
         return res.status(400).json({
           data: null,
-          message: 'User not found',
+          message: 'Username or password is incorrect',
           code: 0
         });
       } else {
@@ -36,7 +36,7 @@ class AuthController {
         } else {
           return res.status(401).json({
             data: null,
-            message: 'Password is incorrect',
+            message: 'Username or password is incorrect',
             code: 0
           });
         }
