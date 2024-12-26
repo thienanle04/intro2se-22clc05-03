@@ -68,8 +68,9 @@
                     @click="performGenre('ComingOfAge')">
                     <i class="bi bi-person-fill me-1"></i> ComingOfAge
                 </button>
-                <button class="btn btn-danger rounded-pill mx-2 mb-2 category-button" @click="performGenre('All')">
-                    View All
+                <button class="btn btn-outline-secondary rounded-pill mx-2 mb-2 category-button"
+                    @click="performGenre('LiteraryFiction')">
+                    <i class="bi bi-journal-bookmark"></i> LiteraryFiction
                 </button>
             </div>
         </div>
