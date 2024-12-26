@@ -57,7 +57,6 @@
         <!-- If not authenticated -->
         <div v-else class="mt-4">
             <p>You must be logged in to write a review.</p>
-            <button @click="redirectToLogin" class="btn btn-warning">Login</button>
         </div>
         
         <!-- Reviews Section -->

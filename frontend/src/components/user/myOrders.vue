@@ -47,6 +47,13 @@ export default {
       orders: [], // Holds the list of orders
     };
   },
+    watch: {
+    '$store.state.isAuthenticated'(newValue) {
+      if (!newValue) {
+        this.orders = []; // Clear orders when the user logs out
+      }
+    },
+  },
   methods: {
     async fetchOrders() {
       const token = this.$store.state.authToken; // Retrieve token from your store
