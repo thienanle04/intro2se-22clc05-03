@@ -5,6 +5,14 @@
 
         <!-- Pie chart for order status -->
         <canvas ref="chartCanvasStatus" class="chartCanvasStatus"></canvas>
+
+        <!-- Order status numbers -->
+        <div class="status-summary">
+            <div v-for="(value, key) in orderStatusCount" :key="key" class="status-item">
+                <span class="status-label">{{ key }}</span>:
+                <span class="status-value">{{ value }}</span>
+            </div>
+        </div>
     </div>
 </template>
 
@@ -22,6 +30,8 @@ export default {
     data() {
         return {
             chartInstance: null, // Tham chiếu đến biểu đồ
+            chartInstanceStatus: null, // Biểu đồ trạng thái
+            orderStatusCount: {}, // Dữ liệu trạng thái đơn hàng
         };
     },
     mounted() {
@@ -40,29 +50,47 @@ export default {
                 const orders = data.data.orders;
                 console.log('Dữ liệu đơn hàng:', orders);
 
-                // Tính doanh thu theo từng tháng dựa trên order.createdAt
-                const monthlyRevenue = orders.reduce((acc, order) => {
-                    const createdAt = new Date(order.createdAt); // Chuyển `createdAt` thành kiểu Date
-                    if (!isNaN(createdAt.getTime())) { // Kiểm tra ngày hợp lệ
-                        const month = createdAt.getMonth(); // Lấy tháng (1-12)
-                        const total = order.total || 0; // Mặc định doanh thu là 0 nếu `total` không hợp lệ
-                        acc[month] = (acc[month] || 0) + total; // Tính tổng doanh thu theo tháng
+                const currentYear = new Date().getFullYear(); // Lấy năm hiện tại
+
+                // Lọc đơn hàng chỉ thuộc năm hiện tại
+                const filteredOrders = orders.filter(order => {
+                    const createdAt = new Date(order.createdAt);
+                    return createdAt.getFullYear() === currentYear;
+                });
+
+                // Tính doanh thu theo từng tháng dựa trên filteredOrders
+                const monthlyRevenue = filteredOrders.reduce((acc, order) => {
+                    const createdAt = new Date(order.createdAt);
+                    if (!isNaN(createdAt.getTime())) {
+                        const month = createdAt.getMonth(); // Lấy tháng (0-11)
+                        const total = order.total || 0;
+                        acc[month] = (acc[month] || 0) + total;
                     }
                     return acc;
                 }, {});
-                // Cập nhật dữ liệu biểu đồ
-                this.updateChartData(Object.keys(monthlyRevenue), Object.values(monthlyRevenue));
-                const orderStatusCount = orders.reduce((acc, order) => {
-                    const status = order.status; // Giả sử trạng thái được lưu trong trường `status`
+
+                // Cập nhật dữ liệu biểu đồ doanh thu
+                this.updateChartData(
+                    Object.keys(monthlyRevenue),
+                    Object.values(monthlyRevenue)
+                );
+
+                // Tính số lượng trạng thái đơn hàng
+                const orderStatusCount = filteredOrders.reduce((acc, order) => {
+                    const status = order.status;
                     if (status === 'pending') {
                         acc.pending = (acc.pending || 0) + 1;
-                    } else if (status === 'delivery') {
-                        acc.delivery = (acc.delivery || 0) + 1;
-                    } else if (status === 'done') {
-                        acc.done = (acc.done || 0) + 1;
+                    } else if (status === 'Shipping') {
+                        acc.shipping = (acc.shipping || 0) + 1;
+                    } else if (status === 'Delivered') {
+                        acc.delivered = (acc.delivered || 0) + 1;
                     }
                     return acc;
-                }, { pending: 0, done: 0, delivery: 0 });
+                }, { pending: 0, shipping: 0, delivered: 0 });
+
+                this.orderStatusCount = orderStatusCount; // Lưu vào data để hiển thị
+
+                // Cập nhật dữ liệu biểu đồ trạng thái
                 this.updateChartDataOrderStatus(orderStatusCount);
             } catch (error) {
                 console.error('Lỗi khi lấy dữ liệu:', error);
@@ -110,16 +138,16 @@ export default {
                 this.chartInstanceStatus = new Chart(this.$refs.chartCanvasStatus.getContext('2d'), {
                     type: 'pie',
                     data: {
-                        labels: ['Pending', 'Delivery', 'Done'],
+                        labels: ['Pending', 'Shipping', 'Delivered'], // Nhãn mới
                         datasets: [
                             {
                                 label: 'Trạng thái đơn hàng',
                                 data: [
                                     orderStatusCount.pending,
-                                    orderStatusCount.delivery,
-                                    orderStatusCount.done
+                                    orderStatusCount.shipping,
+                                    orderStatusCount.delivered
                                 ],
-                                backgroundColor: ['#ffcc00', '#28a745', '#dc3545'], // Màu sắc cho mỗi trạng thái
+                                backgroundColor: ['#ffcc00', '#007bff', '#28a745'], // Màu sắc cho các trạng thái
                             },
                         ],
                     },
@@ -131,7 +159,6 @@ export default {
                 console.error('Error updating chart data for order status:', error);
             }
         }
-
     },
 };
 </script>
@@ -168,5 +195,27 @@ canvas.chartCanvasStatus {
     /* Set height for pie chart */
     margin: 20px auto;
     /* Add space around pie chart */
+}
+
+.status-summary {
+    margin-top: 20px;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.status-item {
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.status-label {
+    color: #333;
+}
+
+.status-value {
+    color: #007bff;
 }
 </style>
