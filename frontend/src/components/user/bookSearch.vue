@@ -89,7 +89,7 @@ export default {
             allBooks: [],
             searchResults: [],
             selectedGenre: '',
-            genres: ['Fantasy', 'Adventure', 'Classic', 'Romance', 'Dystopian', 'ComingOfAge'],
+            genres: ['Fantasy', 'Adventure', 'Classic', 'Romance', 'Dystopian', 'ComingOfAge', 'LiteraryFiction'],
             filteredResults: [],
             currentPage: 1,
             itemsPerPage: 10,
