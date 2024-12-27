@@ -299,15 +299,6 @@ class UserController {
         });
       }
 
-      // Kiểm tra số lượng sách còn lại
-      if (book.stock < quantity) {
-        return res.status(400).json({
-          data: null,
-          message: 'Not enough stock',
-          code: 0
-        });
-      }
-
       // Tìm và cập nhật hoặc tạo mới giỏ hàng của người dùng
       let user = await User.findById(userId).populate('cart');
       if (!user) {
@@ -332,7 +323,7 @@ class UserController {
       let cart = await Cart.findById(user.cart).populate('items');
       for (let item of cart.items) {
         let cartItem = await CartItem.findById(item._id);
-        if (cartItem.book.toString() === book._id) {
+        if (cartItem.book.toString() === book._id.toString()) {
           if (book.stock < quantity) {
             return res.status(400).json({
               data: null,
@@ -567,15 +558,42 @@ class UserController {
     // Kiểm tra điều kiện đặc biệt cho userId
     if (userId === '12123124123124') {
         try {
-            // Xử lý cho trường hợp không phải người dùng thực
-            const cartItemLists = await Promise.all(items.map(async (item) => {
+            const cartItemLists = [];
+            for (const item of items) {
+              try {
                 const cartItem = new CartItem({
-                    book: item._id,
-                    quantity: item.quantity
+                  book: item._id,
+                  quantity: item.quantity
                 });
                 await cartItem.save();
-                return { _id: cartItem._id };
-            }));
+            
+                const book = await Book.findById(item._id);
+                const new_stock = book.stock - item.quantity;
+            
+                if (new_stock < 0) {
+                  // Insufficient stock, return immediately
+                  return res.status(400).json({
+                    data: null,
+                    message: `Not enough stock for book: ${book.title}`,
+                    code: 0
+                  });
+                } else {
+                  // Update stock if sufficient
+                  book.stock = new_stock;
+                  await book.save();
+                }
+            
+                // Add cart item to the list
+                cartItemLists.push({ _id: cartItem._id });
+              } catch (error) {
+                console.error(`Error processing item: ${item._id}`, error);
+                return res.status(500).json({
+                  data: null,
+                  message: `Error processing item: ${item._id}`,
+                  code: 0
+                });
+              }
+            }
 
             // Tạo đơn hàng mới
             const newOrder = new Order({
@@ -618,6 +636,41 @@ class UserController {
                     code: 0
                 });
             }
+            
+            for (const item of user.cart.items) {
+              try {
+                const cartItem = await CartItem.findById(item._id);
+            
+                const book = await Book.findById(cartItem.book);
+                const new_stock = book.stock - cartItem.quantity;
+            
+                if (new_stock < 0) {
+                  return res.status(400).json({
+                    data: null,
+                    message: 'Not enough items in stock',
+                    code: 0,
+                  });
+                }
+            
+              } catch (error) {
+                console.error(`Error processing item: ${item._id}`, error);
+                return res.status(500).json({
+                  data: null,
+                  message: `Error processing item: ${item._id}`,
+                  code: 0,
+                });
+              }
+            }
+
+            for (const item of user.cart.items) {
+                const cartItem = await CartItem.findById(item._id);
+            
+                const book = await Book.findById(cartItem.book);
+                const new_stock = book.stock - cartItem.quantity;
+            
+                book.stock = new_stock;
+                await book.save();
+              }
 
             // Tạo đơn hàng mới từ giỏ hàng
             const newOrder = new Order({
@@ -655,6 +708,7 @@ class UserController {
         }
     }
 }
+
 
 
   // [POST] /api/v1/users/create: create user, only admin can access
