@@ -28,3 +28,4 @@ coverage
 
 *.tsbuildinfo
 .vscode
+node_modules

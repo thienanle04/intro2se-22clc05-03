@@ -332,7 +332,7 @@ class UserController {
       let cart = await Cart.findById(user.cart).populate('items');
       for (let item of cart.items) {
         let cartItem = await CartItem.findById(item._id);
-        if (cartItem.book.toString() === book._id) {
+        if (cartItem.book.toString() === book._id.toString()) {
           if (book.stock < quantity) {
             return res.status(400).json({
               data: null,
@@ -424,10 +424,20 @@ class UserController {
   async removeCartItem(req, res) {
     try {
       const bookId = req.params.bookId; // Get the bookId from the URL
-      const userId = req.user.userId; // Get the userId from the authenticated user (req.user)
+      const userId = req.user.id; // Get the userId from the authenticated user (req.user)
+
+      // Tìm và cập nhật hoặc tạo mới giỏ hàng của người dùng
+      let user = await User.findById(userId).populate('cart');
+      if (!user) {
+        return res.status(404).json({
+          data: null,
+          message: 'User not found',
+          code: 0
+        });
+      }
 
       // Find the cart for the user
-      const cart = await Cart.findOne({ userId });
+      const cart = await Cart.findById(user.cart).populate('items');
 
       if (!cart) {
         return res.status(404).json({
@@ -452,6 +462,11 @@ class UserController {
         }
       }
 
+      return res.status(200).json({
+        data: null,
+        message: 'You do not have this item in your cart',
+        code: 0
+      });
     }
     catch (error) {
       res.status(500).json({
