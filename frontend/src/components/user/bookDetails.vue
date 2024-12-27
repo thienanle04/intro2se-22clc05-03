@@ -34,7 +34,7 @@
                 <div class="card text-center shadow">
                     <div class="card-body">
                         <h5 class="card-title price">{{ book.price }}$</h5>
-                        <button class="btn btn-danger mt-3"  @click="this.$store.dispatch('addToCart', { book: book });">
+                        <button class="btn btn-danger mt-3" @click="this.$store.dispatch('addToCart', { book: book });">
                             <i class="bi bi-cart3 fs-4"></i>
                             Add to Cart
                         </button>
@@ -46,10 +46,12 @@
         <!-- Review Submission -->
         <div v-if="isAuthenticated" class="mt-4">
             <h5>Write a Review</h5>
-            <textarea v-model="newReview.content" placeholder="Write your review..." class="form-control" rows="3"></textarea>
+            <textarea v-model="newReview.content" placeholder="Write your review..." class="form-control"
+                rows="3"></textarea>
             <div class="rating mt-2">
-            <label>Rating: </label>
-            <input type="number" v-model="newReview.rating" min="1" max="5" class="form-control d-inline-block w-auto" />
+                <label>Rating: </label>
+                <input type="number" v-model="newReview.rating" min="1" max="5"
+                    class="form-control d-inline-block w-auto" />
             </div>
             <button @click="submitReview" class="btn btn-primary mt-3">Submit Review</button>
         </div>
@@ -58,30 +60,38 @@
         <div v-else class="mt-4">
             <p>You must be logged in to write a review.</p>
         </div>
-        
+
         <!-- Reviews Section -->
         <div v-if="book && book.reviews && book.reviews.length" class="reviews-section mt-4">
             <!-- Reviews Header -->
             <h4 class="text-center">Reviews</h4>
-            
+
             <!-- Reviews List with Pagination -->
-            <div class="reviews-container" style="background-color: #f9f9f9; padding: 20px; border-radius: 8px; border: 1px solid #ddd;">
+            <div class="reviews-container"
+                style="background-color: #f9f9f9; padding: 20px; border-radius: 8px; border: 1px solid #ddd;">
                 <div v-for="(review, index) in paginatedReviews" :key="index" class="review-item mb-4">
                     <div class="d-flex align-items-center">
-                        <img :src="review.avatar" alt="User Avatar" class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;" />
+                        <img :src="review.avatar" alt="User Avatar" class="rounded-circle"
+                            style="width: 40px; height: 40px; object-fit: cover;" />
                         <div class="ms-3">
                             <strong>{{ review.user }}</strong>
                             <p>{{ review.content }}</p>
+                            <div style="font-size: 14px; color: #f39c12;">
+                                Rating: {{ review.rating }}⭐
+                            </div>
                         </div>
                     </div>
+
                 </div>
             </div>
 
             <!-- Pagination Controls -->
             <div class="pagination-container d-flex justify-content-center mt-4">
-                <button @click="changePage(currentPage - 1)" :disabled="currentPage === 1" class="btn btn-light me-2">Previous</button>
+                <button @click="changePage(currentPage - 1)" :disabled="currentPage === 1"
+                    class="btn btn-light me-2">Previous</button>
                 <span>Page {{ currentPage }} of {{ totalPages }}</span>
-                <button @click="changePage(currentPage + 1)" :disabled="currentPage === totalPages" class="btn btn-light ms-2">Next</button>
+                <button @click="changePage(currentPage + 1)" :disabled="currentPage === totalPages"
+                    class="btn btn-light ms-2">Next</button>
             </div>
         </div>
 
@@ -182,7 +192,7 @@ export default {
             return this.book.reviews.slice(start, end);
         },
         isAuthenticated() {
-        return this.$store.getters.isAuthenticated;
+            return this.$store.getters.isAuthenticated;
         },
     },
     methods: {
@@ -200,7 +210,7 @@ export default {
             return result;
         },
 
-          changePage(page) {
+        changePage(page) {
             if (page >= 1 && page <= this.totalPages) {
                 this.currentPage = page;
             }
@@ -227,60 +237,60 @@ export default {
 
         async submitReview() {
             if (!this.isAuthenticated) {
-            Swal.fire({
-                title: "Login Required",
-                text: "You must be logged in to submit a review.",
-                icon: "warning",
-            });
-            return;
+                Swal.fire({
+                    title: "Login Required",
+                    text: "You must be logged in to submit a review.",
+                    icon: "warning",
+                });
+                return;
             }
             const reviewData = {
                 rating: this.newReview.rating,
-                comment: this.newReview.content, 
+                comment: this.newReview.content,
             };
 
 
             try {
-             const bookId = this.$route.params.id;
-            const response = await fetch(`/api/v1/books/${bookId}/review`, {
-                method: 'POST',
-                headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${this.$store.getters.getAuthToken}`,
-                },
-                body: JSON.stringify(reviewData),
-            });
-
-            const data = await response.json();
-
-            if (data.code === 1) {
-                Swal.fire({
-                title: "Review Submitted",
-                text: data.message,
-                icon: "success",
+                const bookId = this.$route.params.id;
+                const response = await fetch(`/api/v1/books/${bookId}/review`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${this.$store.getters.getAuthToken}`,
+                    },
+                    body: JSON.stringify(reviewData),
                 });
-                this.newReview.comment = '';  // Clear the comment input
-                this.newReview.rating = 5;    // Reset the rating
-                this.fetchBookDetails();     // Refresh book details to show the new review
-            } else {
-                Swal.fire({
-                title: "Error",
-                text: data.message || "Failed to submit your review. Please try again.",
-                icon: "error",
-                });
-            }
+
+                const data = await response.json();
+
+                if (data.code === 1) {
+                    Swal.fire({
+                        title: "Review Submitted",
+                        text: data.message,
+                        icon: "success",
+                    });
+                    this.newReview.comment = '';  // Clear the comment input
+                    this.newReview.rating = 5;    // Reset the rating
+                    this.fetchBookDetails();     // Refresh book details to show the new review
+                } else {
+                    Swal.fire({
+                        title: "Error",
+                        text: data.message || "Failed to submit your review. Please try again.",
+                        icon: "error",
+                    });
+                }
             } catch (error) {
-            Swal.fire({
-                title: "Error",
-                text: `An error occurred while submitting your review: ${error.message}`,
-                icon: "error",
-            });
+                Swal.fire({
+                    title: "Error",
+                    text: `An error occurred while submitting your review: ${error.message}`,
+                    icon: "error",
+                });
             }
         },
         redirectToLogin() {
             this.$router.push('/login'); // Redirect to the login page
         },
-         isUserLoggedIn() {
+        isUserLoggedIn() {
             // Check if the user is logged in by checking for a token or using Vuex state
             // Assuming the JWT token is stored in localStorage
             return !!localStorage.getItem('authToken'); // or use Vuex if needed

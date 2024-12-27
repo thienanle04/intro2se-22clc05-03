@@ -18,8 +18,8 @@ class BookController {
             genre: genre ? genre.name : null  // Add genre name instead of genre ID
           };
         })
-      );  
-      
+      );
+
       res.status(200).json({
         data: {
           books: booksWithGenreNames,
@@ -41,63 +41,63 @@ class BookController {
     console.log(req.body);
     try {
       const book = req.body;
-        const {
-          title,
-          author,
-          genre,
-          SBN,
-          description,
-          price,
-          stock,
-          rating,
-        } = book;
+      const {
+        title,
+        author,
+        genre,
+        SBN,
+        description,
+        price,
+        stock,
+        rating,
+      } = book;
 
-        if(req.file){
-          book.image = req.file.path;
-        }
-        
-        const bookFound = await Book.findOne({
-          $or: [{ title, author }, { SBN }]
+      if (req.file) {
+        book.image = req.file.path;
+      }
+
+      const bookFound = await Book.findOne({
+        $or: [{ title, author }, { SBN }]
+      });
+
+      if (bookFound) {
+        return res.status(400).json({
+          data: null,
+          message: 'Book already exists',
+          code: 0
         });
+      }
 
-        if (bookFound) {
-          return res.status(400).json({
-            data: null,
-            message: 'Book already exists',
-            code: 0
-          });
-        }
-
-        var genreFound = await Genre.findOne({ name: genre });
-        if (!genreFound) {
-          genreFound = new Genre({
-            name: genre,
-            isHidden: false,
-          });
-          await genreFound.save();
-        }
-
-        const newBook = new Book({
-          title,
-          image: book.image,
-          author,
-          genre: genreFound._id,
-          SBN,
-          description,
-          price,
-          stock,
-          rating
+      var genreFound = await Genre.findOne({ name: genre });
+      if (!genreFound) {
+        genreFound = new Genre({
+          name: genre,
+          isHidden: false,
         });
-        await newBook.save();
+        await genreFound.save();
+      }
 
-        res.status(201).json({
-          data: {
-            book: newBook,
-          },
-          message: "Create new book successfully",
-          code: 1
-        })
-    } catch(error){
+      const newBook = new Book({
+        title,
+        image: book.image,
+        author,
+        genre: genreFound._id,
+        SBN,
+        description,
+        price,
+        stock,
+        rating
+      });
+      await newBook.save();
+
+      res.status(201).json({
+        data: {
+          book: newBook,
+        },
+        message: "Create new book successfully",
+        code: 1
+      })
+    } catch (error) {
       res.status(500).json({
         data: null,
         message: 'Create new book failed with error: ' + error,
@@ -128,7 +128,9 @@ class BookController {
         return {
           user: user.name,
           avatar: user.image,
-          content: review.content        };
+          content: review.content,
+          rating: review.rating
+        };
       }));
 
       // Modify the genre in the response object, but not in the database
@@ -213,7 +215,7 @@ class BookController {
         });
       }
 
-      if(req.file){
+      if (req.file) {
         book.image = req.file.path
       }
       await book.save();
@@ -279,10 +281,10 @@ class BookController {
           rating,
         } = book;
 
-        if(req.file){
+        if (req.file) {
           book.image = req.file.path;
         }
-        
+
 
         const bookFound = await Book.findOne({ title, author });
         if (bookFound) {
@@ -387,7 +389,6 @@ class BookController {
         rating: rating
       });
       book.reviews.push(review);
-      book.rating = (book.rating + rating) / (book.reviews.length);
       await review.save();
       await book.save();
       res.status(200).json({
@@ -397,7 +398,7 @@ class BookController {
         message: 'Review book successfully',
         code: 1
       });
-    }catch (error) {
+    } catch (error) {
       res.status(500).json({
         data: null,
         message: 'Review book failed with error: ' + error,
