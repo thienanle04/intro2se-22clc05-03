@@ -324,13 +324,6 @@ class UserController {
       for (let item of cart.items) {
         let cartItem = await CartItem.findById(item._id);
         if (cartItem.book.toString() === book._id.toString()) {
-          if (book.stock < quantity) {
-            return res.status(400).json({
-              data: null,
-              message: 'Not enough stock',
-              code: 0
-            });
-          }
           cartItem.quantity = quantity;
           await cartItem.save();
           return res.status(200).json({
@@ -569,157 +562,125 @@ class UserController {
   async payment(req, res) {
     const { userId } = req.params;
     const { name, email, phone, number, street, district, ward, city, total, items } = req.body;
+
+    // create new cartItem for each item in cartItems
+    const newCartItems = await Promise.all(items.map(async (item) => {
+      const newCartItem = new CartItem({
+        book: item._id,
+        quantity: item.quantity
+      });
+      await newCartItem.save();
+      return newCartItem;
+    }));
+
+    for (const item of newCartItems) {
+      try {
+        const cartItem = await CartItem.findById(item._id);
     
+        const book = await Book.findById(cartItem.book);
+        const new_stock = book.stock - cartItem.quantity;
+    
+        if (new_stock < 0) {
+          return res.status(400).json({
+            data: null,
+            message: 'Not enough stock for book: ' + book.title + '. Remaining stock: ' + book.stock, 
+            code: 0,
+          });
+        }
+    
+      } catch (error) {
+        console.error(`Error processing item: ${item._id}`, error);
+        return res.status(500).json({
+          data: null,
+          message: `Error processing item: ${item._id}`,
+          code: 0,
+        });
+      }
+    }
+
+    for (const item of newCartItems) {
+      const cartItem = await CartItem.findById(item._id);
+  
+      const book = await Book.findById(cartItem.book);
+      const new_stock = book.stock - cartItem.quantity;
+  
+      book.stock = new_stock;
+      await book.save();
+    }
+
     // Kiểm tra điều kiện đặc biệt cho userId
     if (userId === '12123124123124') {
-        try {
-            const cartItemLists = [];
-            for (const item of items) {
-              try {
-                const cartItem = new CartItem({
-                  book: item._id,
-                  quantity: item.quantity
-                });
-                await cartItem.save();
-            
-                const book = await Book.findById(item._id);
-                const new_stock = book.stock - item.quantity;
-            
-                if (new_stock < 0) {
-                  // Insufficient stock, return immediately
-                  return res.status(400).json({
-                    data: null,
-                    message: `Not enough stock for book: ${book.title}`,
-                    code: 0
-                  });
-                } else {
-                  // Update stock if sufficient
-                  book.stock = new_stock;
-                  await book.save();
-                }
-            
-                // Add cart item to the list
-                cartItemLists.push({ _id: cartItem._id });
-              } catch (error) {
-                console.error(`Error processing item: ${item._id}`, error);
-                return res.status(500).json({
-                  data: null,
-                  message: `Error processing item: ${item._id}`,
-                  code: 0
-                });
-              }
-            }
+      try {
+        // Tạo đơn hàng mới từ giỏ hàng
+        const newOrder = new Order({
+          items: newCartItems,
+          details: { name, email, phone, number, street, district, ward, city },
+          total
+        });
 
-            // Tạo đơn hàng mới
-            const newOrder = new Order({
-                items: cartItemLists,
-                details: { name, email, phone, number, street, district, ward, city },
-                total
-            });
-            await newOrder.save();
+        // Lưu đơn hàng và cập nhật người dùng
+        await newOrder.save();
 
-            return res.status(200).json({
-                data: newOrder,
-                message: 'Payment successfully',
-                code: 1
-            });
-        } catch (error) {
-            console.error(error);
-            return res.status(500).json({
-                data: null,
-                message: `Error during special payment process: ${error.message}`,
-                code: 0
-            });
-        }
+        return res.status(200).json({
+            data: newOrder,
+            message: 'Your order has been placed successfully. Please wait for confirmation',
+            code: 1
+        });
+      } catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            data: null,
+            message: `Error during payment process: ${error.message}`,
+            code: 0
+        });
+      }
     } else {
         try {
-            // Xử lý cho người dùng thực sự
-            const user = await User.findById(userId).populate('cart');
-            if (!user) {
-                return res.status(404).json({
-                    data: null,
-                    message: 'User not found',
-                    code: 0
-                });
-            }
+          // Tạo đơn hàng mới từ giỏ hàng
+          const newOrder = new Order({
+            user: userId,
+            items: newCartItems,
+            details: { name, email, phone, number, street, district, ward, city },
+            total
+          });
 
-            // Kiểm tra giỏ hàng của người dùng
-            if (!user.cart || !user.cart.items || user.cart.items.length === 0) {
-                return res.status(400).json({
-                    data: null,
-                    message: 'Cart is empty or not provided',
-                    code: 0
-                });
-            }
-            
-            for (const item of user.cart.items) {
-              try {
-                const cartItem = await CartItem.findById(item._id);
-            
-                const book = await Book.findById(cartItem.book);
-                const new_stock = book.stock - cartItem.quantity;
-            
-                if (new_stock < 0) {
-                  return res.status(400).json({
-                    data: null,
-                    message: 'Not enough items in stock',
-                    code: 0,
-                  });
-                }
-            
-              } catch (error) {
-                console.error(`Error processing item: ${item._id}`, error);
-                return res.status(500).json({
+          // Lưu đơn hàng và cập nhật người dùng
+          await newOrder.save();
+
+          // Xử lý cho người dùng thực sự
+          const user = await User.findById(userId).populate('cart');
+          if (!user) {
+              return res.status(404).json({
                   data: null,
-                  message: `Error processing item: ${item._id}`,
-                  code: 0,
-                });
-              }
-            }
+                  message: 'User not found',
+                  code: 0
+              });
+          }
 
-            for (const item of user.cart.items) {
-                const cartItem = await CartItem.findById(item._id);
-            
-                const book = await Book.findById(cartItem.book);
-                const new_stock = book.stock - cartItem.quantity;
-            
-                book.stock = new_stock;
-                await book.save();
-              }
+          user.order.push(newOrder._id);
 
-            // Tạo đơn hàng mới từ giỏ hàng
-            const newOrder = new Order({
-                user: userId,
-                items: user.cart.items, // Chỉ lấy ID của các item
-                details: { name, email, phone, number, street, district, ward, city },
-                total
-            });
+          // Xóa cart item
+          await CartItem.deleteMany({ _id: { $in: user.cart.items } });
 
-            // Lưu đơn hàng và cập nhật người dùng
-            await newOrder.save();
-            user.order.push(newOrder._id);
+          // Clear the user's cart
+          const cart = await Cart.findById(user.cart);
+          cart.items = [];
+          // Save the updated user and cart
+          await cart.save();
+          await user.save();
 
-            // Clear the user's cart
-            const cart = await Cart.findById(user.cart);
-            cart.items = [];
-            user.cart = null;
-            // Save the updated user and cart
-            await cart.save();
-            await user.save();
-
-            return res.status(200).json({
-                data: newOrder,
-                message: 'Payment successfully',
-                code: 1
-            });
-
+          return res.status(200).json({
+              data: newOrder,
+              message: 'Payment successfully',
+              code: 1
+          });
         } catch (error) {
-            console.error(error);
-            return res.status(500).json({
-                data: null,
-                message: `Error during payment process: ${error.message}`,
-                code: 0
-            });
+          console.error(error);
+          return res.status(500).json({
+              data: null,
+              message: `Error during payment process: ${error.message}`,
+              code: 0
+          });
         }
     }
 }

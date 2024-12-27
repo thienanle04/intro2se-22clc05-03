@@ -196,7 +196,6 @@ export default createStore({
       try {
         let response;
         if (state.isAuthenticated) {
-          await dispatch("updateCart");
           response = await fetch(
             `/api/v1/users/${state.userId}/payment`,
             {
@@ -208,6 +207,7 @@ export default createStore({
               body: JSON.stringify({
                 ...checkoutDetails,
                 total: checkoutDetails.total, // Include cart items from Vuex state
+                items: state.cartItems,
               }),
             }
           );

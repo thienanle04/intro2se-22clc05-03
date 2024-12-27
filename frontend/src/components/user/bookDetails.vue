@@ -1,6 +1,6 @@
 <template>
     <div class="book-details-container" v-if="book">
-        <div class="row justify-content-center">
+        <div class="row justify-content-center" style="height:min-content;">
             <!-- Book Image Card -->
             <div class="col-md-3">
                 <div class="card text-center shadow">
