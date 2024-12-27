@@ -389,7 +389,11 @@ class BookController {
         rating: rating
       });
       book.reviews.push(review);
-      book.rating = (book.rating + rating) / (book.reviews.length);
+      if (book.reviews.length === 1) {
+        book.rating = rating;
+      } else {
+        book.rating = (book.rating * (book.reviews.length - 1) + rating) / book.reviews.length;
+      }
       await review.save();
       await book.save();
       res.status(200).json({
