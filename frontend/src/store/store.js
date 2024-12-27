@@ -194,10 +194,9 @@ export default createStore({
   actions: {
     async checkout({ state, dispatch }, checkoutDetails) {
       try {
-        console.log('state: ', state);
-        await dispatch("updateCart");
         let response;
         if (state.isAuthenticated) {
+          await dispatch("updateCart");
           response = await fetch(
             `/api/v1/users/${state.userId}/payment`,
             {
