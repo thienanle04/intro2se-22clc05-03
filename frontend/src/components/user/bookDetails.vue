@@ -125,7 +125,7 @@
                                                 {{ item.author }}
                                             </div>
                                             <div class="card-rating text-center mb-2" style="font-size: 14px;">
-                                                {{ item.rating }}⭐
+                                                {{ item.rating.toFixed(1) }}⭐
                                             </div>
                                             <div class="card-price-relative text-center text-danger">
                                                 <a href="#" class="text-dark me-3">

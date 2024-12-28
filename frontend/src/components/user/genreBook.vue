@@ -22,7 +22,7 @@
                         </p>
                         <!-- Rating -->
                         <div class="card-rating" style="font-size: 14px; color: #f39c12;">
-                            {{ book.rating }}⭐
+                            {{ book.rating.toFixed(1) }}⭐
                         </div>
                         <!-- Price & Add to Cart -->
                         <div class="card-price text-center text-danger">

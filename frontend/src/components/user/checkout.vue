@@ -65,6 +65,7 @@
                     <table class="table">
                         <thead>
                             <tr>
+                                <th></th>
                                 <th>#</th>
                                 <th>Title</th>
                                 <th>Author</th>
@@ -81,7 +82,7 @@
                                 <td>{{ index + 1 }}</td>
                                 <td>{{ item.title }}</td>
                                 <td>{{ item.author }}</td>
-                                <td>{{ item.quantity }}</td>
+                                <td class="text-center">{{ item.quantity }}</td>
                                 <td>${{ (item.price * item.quantity).toFixed(2) }}</td>
                             </tr>
                             <tr>
