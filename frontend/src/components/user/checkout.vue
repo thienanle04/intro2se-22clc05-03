@@ -65,8 +65,8 @@
                     <table class="table">
                         <thead>
                             <tr>
-                                <th></th>
                                 <th>#</th>
+                                <th></th>
                                 <th>Title</th>
                                 <th>Author</th>
                                 <th>Quantity</th>
@@ -75,11 +75,11 @@
                         </thead>
                         <tbody>
                             <tr v-for="(item, index) in cartItems" :key="item._id">
+                                <td>{{ index + 1 }}</td>
                                 <td class="text-center">
                                     <img :src="item.image" class="img-fluid rounded" width="60" height="100"
                                         :alt="item.name" />
                                 </td>
-                                <td>{{ index + 1 }}</td>
                                 <td>{{ item.title }}</td>
                                 <td>{{ item.author }}</td>
                                 <td class="text-center">{{ item.quantity }}</td>
