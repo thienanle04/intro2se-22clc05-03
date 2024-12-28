@@ -77,7 +77,7 @@
                             <strong>{{ review.user }}</strong>
                             <p>{{ review.content }}</p>
                             <div style="font-size: 14px; color: #f39c12;">
-                                Rating: {{ review.rating }}⭐
+                                Rating: {{ review.rating.toFixed(1) }}⭐
                             </div>
                         </div>
                     </div>
