@@ -103,16 +103,17 @@ export default createStore({
       }).then(async (result) => {
         if (result.isConfirmed) {
           try {
-            
-            const res = await fetch(`/api/v1/users/${state.userId}/removeCart/${book._id}`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${state.authToken}`,
-              },
-            });
-            if (!res.ok) {
-              throw new Error('Failed to fetch cart');
+            if (state.isAuthenticated) {
+              const res = await fetch(`/api/v1/users/${state.userId}/removeCart/${book._id}`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${state.authToken}`,
+                },
+              });
+              if (!res.ok) {
+                throw new Error('Failed to fetch cart');
+              }
             }
             // Remove the book entirely from the cart
             state.cartItems = state.cartItems.filter(item => item._id !== book._id);
